@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import configReader
 import scipy.stats as stats
-
+import os, shutil
 
 def initialize(n, allzero=False, sigma=0.0):
   """
@@ -165,7 +165,7 @@ def estimatePackingEpsilon(archive, sampleSize):
   """
   archiveSize = len(archive)
   sampleSize = min(sampleSize, archiveSize-1)
-  sampleDistances = [0]
+  sampleDistances = [1E100]
     
   # Compute epsilon metrics for every point in the archive
   for idx in range(archiveSize):
@@ -189,7 +189,7 @@ def estimatePackingEpsilon(archive, sampleSize):
   ##epsilonMetrics.extend( np.percentile(sampleDistances, [75,100]) )
 
   # Return the estimation metrics for the epsilon-Packing
-  return (max(sampleDistances))
+  return (min(sampleDistances))
   #return (tuple(epsilonMetrics))
 
 
@@ -210,7 +210,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
       xi = archive[idx]  
       xj = initialize(n, False, sigma)
       archiveDistances.append( getL2Norm(xi,xj) )
-    sampleDistances.append( min(archiveDistances) )
+    sampleDistances.append( max(archiveDistances) )
 
   meanEpsilon = 0.0
   if (len(sampleDistances) > 1):
@@ -237,7 +237,7 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma):
   coverEps   = estimateCoverEpsilon(archive, sampleSize, n, sigma)#[0]
 
   print int(trial), "\t", int(gen), "\t",\
-        packingEps, "\t", coverEps, "\t",\
+        coverEps, "\t", packingEps, "\t",\
         len(archive)
 
 
@@ -268,8 +268,39 @@ def archiveReport(archive, k, gen, trial):
   sys.stdout.flush()
 
 
+def clearVisualizationDir(vizDirName):
+  try:
+    shutil.rmtree(vizDirName)
+  except:
+    print "Could not remove directory:", vizDirName
+
+  try:
+    os.mkdir(vizDirName)
+  except:
+    print "Could not make directory:", vizDirName
+
+    
+def writeVisualizationFile(vizDirName, gen, archive):
+  """
+  Write a file for reading and visualizing in Paraview
+  """
+  filename = "test" + str(gen) + ".csv"
+  dirname = vizDirName.strip()
+  fullPathFilename = os.path.join(dirname, filename)
+  f = open(fullPathFilename, "w")
+  f.write("x, y, z, idx\n")
+  for idx in range(len(archive)):
+    lineStr = ""
+    #print "YY: ", gen, idx, py, rhoMin,
+    for arg in archive[idx]:
+      lineStr += str(arg) + ", "
+    lineStr += str(idx) + '\n'
+    f.write(lineStr)
+  f.close()
+  
+
         
-def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True):
+def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData"):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -284,27 +315,18 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
   if (pm <= 0.0):
     pm = 1.0/float(n)
 
+  # If we're writing for paraview visualization, clear the directory
+  if (not vizDirName == "NOVIZ"):
+    clearVisualizationDir(vizDirName)
+
   # Loop through generation counter
   for gen in range(maxGenerations):
     y = mutate(x, pm, sigma)
     py = computeSparseness(y, archive, k)
     if (py > rhoMin):
       archive.append( y )
-      ## --- vvv --- Temporary --- vvv -----
-      f = open("./visualizationData/test" + str(gen) + ".csv", "w")
-      f.write("x, y, z, idx\n")
-      for idx in range(len(archive)):
-        lineStr = ""
-        #print "YY: ", gen, idx, py, rhoMin,
-        for arg in archive[idx]:
-          lineStr += str(arg) + ", "
-        lineStr += str(idx) + '\n'
-        f.write(lineStr)
-      f.close()
-        #  print arg,
-        #print
-      ## --- ^^^ --- Temporary --- ^^^ -----
-      #print "  Generation:", gen, "   ArchiveSize:", len(archive)
+      if (not vizDirName == "NOVIZ"):
+        writeVisualizationFile(vizDirName, gen, archive)
 
     # Report results ever 100 generations
     if ( (gen % 100) == 0):
@@ -332,7 +354,8 @@ if __name__ == '__main__':
                     "maxGenerations":50000,\
                     "numTrials":30,\
                     "sigma":0.0,\
-                    "archiveDistancesFile":'archiveDistances.out'}
+                    "archiveDistancesFile":'archiveDistances.out',\
+                    "vizDirName":"visualizationData"}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
 
   print
@@ -346,7 +369,8 @@ if __name__ == '__main__':
                     configObj.pm,\
                     configObj.sigma,\
                     maxGenerations=configObj.maxGenerations,\
-                    allzero=True)
+                    allzero=True,
+                    vizDirName=configObj.vizDirName)
 
   # Provide all the distance measures for the archive of the final
   # trial.

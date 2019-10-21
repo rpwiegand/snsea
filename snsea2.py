@@ -88,11 +88,29 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
   return (child)
 
 
-def getL2Norm(x1, x2):
+def isBinary(x):
   """
-  Return the Euclidean distance betweeen two points.
+  Determine if the array is made up of just 0's and 1's.
   """
-  return (np.sqrt( sum( (x1-x2)**2 ) ))
+  binary = True
+  for arg in x:
+    if (arg > 0) and (arg < 1):
+      binary = False
+  return (binary)
+
+
+def getDistance(x1, x2):
+  """
+  Return the distance betweeen two points.  Use L2 norm (Euclidean) distance
+  for real values and Hamming for binary spaces.
+  """
+  distance = sum( (x1-x2)**2 )
+
+  # If this is a real-value, use L2, otherwise using Hamming distance
+  if not (isBinary(x1) and isBinary(x2)):
+    distance = np.sqrt(distance)
+    
+  return (distance)
 
 
 def computeSparseness(x, archive, k):
@@ -105,7 +123,7 @@ def computeSparseness(x, archive, k):
   # and put them in a vector.
   distances = []
   for xi in archive:
-    distances.append( getL2Norm(x,xi) )
+    distances.append( getDistance(x,xi) )
 
   # Arrange things so that we can get either
   # the k closest values or the size of the 
@@ -118,9 +136,10 @@ def computeSparseness(x, archive, k):
   return (sparseness)
 
 
-def getArchiveDistances(archive, k, n):
+def getPairwiseSparsenessMetrics(archive, k, n):
   """
-  Get minimum archive distances and minimum distance to all 1 string.
+  Get minimum archive distances according to the sparseness metric,
+  as well as minimum distance to 1^n.
   """
   # Setup the arbitrary "piton" measure (the all 1 binary string)
   minDistTo1N = n
@@ -132,13 +151,13 @@ def getArchiveDistances(archive, k, n):
   # Compute pair-wise distances of all points in the archive.
   # Also, keep track of the distance to the all 1 string, 1^n.
   for idx in range(len(archive)):
-    minDistTo1N = min( minDistTo1N, getL2Norm(archive[idx], OneN) )
+    minDistTo1N = min( minDistTo1N, getDistance(archive[idx], OneN) )
     tmpDistances = []
     for jdx in range(len(archive)):
       if (not idx == jdx):
         xi = archive[idx]
         xj = archive[jdx]
-        tmpDistances.append( getL2Norm(xi,xj) )
+        tmpDistances.append( getDistance(xi,xj) )
 
     # Use these pairwise distances to estimate the sparseness of
     # each point in the archive to the rest of the archive
@@ -156,16 +175,16 @@ def getArchiveDistances(archive, k, n):
   return (distances, minDistTo1N)
 
 
-def estimatePackingEpsilon(archive, sampleSize):
+def estimatePackingEpsilon(archive, sampleSize, maxPacking=sys.float_info.max):
   """
-  Compute estimates for the best epsilon estimate for this 
-  archive's epsilon-packing.  The result is a tuple of stats
-  for the distances of points within the archive:
-    (min, Q1, median, mean, Q3, max)
+  Compute the best epsilon estimate for this archive's epsilon-packing.
+  The result is the maximum distance between any two points in the archive
+  divided by 2.  See epsilon-Packing definition in KNN literature.
+    --> Larger epsilon mean that the archive is more efficiently spread out
   """
   archiveSize = len(archive)
   sampleSize = min(sampleSize, archiveSize-1)
-  sampleDistances = [1E100]
+  sampleDistances = [0]#[maxPacking]
     
   # Compute epsilon metrics for every point in the archive
   for idx in range(archiveSize):
@@ -181,63 +200,91 @@ def estimatePackingEpsilon(archive, sampleSize):
       if (not idx == jdx):
         xi = archive[idx]
         xj = archive[jdx]
-        sampleDistances.append( getL2Norm(xi,xj) )
-
-  # Estimate the min, Q1, median, Q3, and max for these
-  ##epsilonMetrics = np.percentile(sampleDistances, [0,25,50,75,100])
-  ##epsilonMetrics.append( np.mean(sampleDistances) )
-  ##epsilonMetrics.extend( np.percentile(sampleDistances, [75,100]) )
+        sampleDistances.append( getDistance(xi,xj) )
 
   # Return the estimation metrics for the epsilon-Packing
-  return (min(sampleDistances))
-  #return (tuple(epsilonMetrics))
+  #   Subset Y of U is a eps-Packing iff D(x,y) > 2eps for all x,y \in Y
+  return (max(sampleDistances)/2)
 
 
 def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
   """
-  Compute estimates for the best epsilon estimate for this 
-  archive's epsilon-cover.  The result is a tuple of stats
-  for the distances of points within the archive:
-    (min, Q1, median, mean, Q3, max)
+  Compute the best epsilon estimate for this archive's epsilon-cover.
+  We do this by sampling the whole space and finding the the point
+  with the smallest distance to that point to *any* point in the archive.  
+  Our estimate is the maximum of all such distances.  We also include the
+  1^n string as one of those points as a kind of "piton" measure since our
+  algorithms tend to start at 0^n.  See epsilon-cover definition in KNN 
+  literature.
+    --> Smaller epsilon means fewer points are "close" to whole space
   """
   archiveSize = len(archive)
   sampleSize = min(sampleSize, 2**n)
   sampleDistances = []
 
   for sampleIdx in range(sampleSize):
+    # Find the closest point in archive to a random point
+    xj = initialize(n, False, sigma) 
     archiveDistances = []
     for idx in range(archiveSize):
       xi = archive[idx]  
-      xj = initialize(n, False, sigma)
-      archiveDistances.append( getL2Norm(xi,xj) )
-    sampleDistances.append( max(archiveDistances) )
+      archiveDistances.append( getDistance(xi,xj) )
+    sampleDistances.append( min(archiveDistances) )
 
-  meanEpsilon = 0.0
+    # Find the closest points in archive to 1^n
+    xk = np.array([1]*len(xi))    
+    archiveDistances = []
+    for idx in range(archiveSize):
+      xi = archive[idx]  
+      archiveDistances.append( getDistance(xi,xk) )
+    sampleDistances.append( min(archiveDistances) )
+
+  # Our epsilon estimate is the *maximum* of those closest points
+  epsilon = 0.0
   if (len(sampleDistances) > 1):
-    meanEpsilon = np.mean(sampleDistances)
+    epsilon = max(sampleDistances)
     
-  # Estimate the min, Q1, median, Q3, and max for these
-  ##epsilonMetrics = np.percentile(sampleDistances, [0,25,50,75,100])
-  ##epsilonMetrics.append( np.mean(sampleDistances) )
-  ##epsilonMetrics.extend( np.percentile(sampleDistances, [75,100]) )
-
   # Return the estimation metrics for the epsilon-Packing
-  return (meanEpsilon)
-  #return (tuple(epsilonMetrics))
-    
+  #   Subet Y of U is an eps-cover if for every x \in U,
+  #   there is some y \in Y where D(x,y) < eps
+  return (epsilon)
+
+
+#################################################################
+# Example: There exists a 2-net for U={0,1}^4 with archive of  #
+#           size 6.                                            #
+#                                                              #
+#      A = {0000, 0011, 1100, 0110, 1001, 1111}                #
+#    |A| = 6                                                   #
+#                                                              #
+#  1) No point in {0,1}^4 is more than 2 away from some point  #
+#     in A.  So the archive is a 2-Cover                       #
+#                                                              #
+#  2) The largest distance between any two points in A is 4,   #
+#     and 4/2 = 2.  So the archive is a 2-Packing.             #
+#                                                              #
+# Therefore this archive is an 2-*optimal* archive.            #
+#################################################################
+
 
 def altArchiveReportHeader():
-  print "Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t ArchiveSize"
+  print "Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t ArchiveSize \t MinArchiveSparseness"
 
-def altArchiveReport(archive, n, gen, trial, sampleSize, sigma):
+def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
   """
   Print output for the trial and various epsilon metrics
   """
-  packingEps = estimatePackingEpsilon(archive, sampleSize)#[-1]
-  coverEps   = estimateCoverEpsilon(archive, sampleSize, n, sigma)#[0]
+  maxPackingDistance = getDistance(np.array([0]*n), np.array([1]*n))
+  packingEps = estimatePackingEpsilon(archive, sampleSize, maxPackingDistance)
+  coverEps   = estimateCoverEpsilon(archive, sampleSize, n, sigma)
 
+  minSparse = -1
+  if (len(archive) > 1):
+    sparsenessVals, minAllOne  = getPairwiseSparsenessMetrics(archive, k, n)
+    minSparse = min(sparsenessVals)
+    
   print int(trial), "\t", int(gen), "\t",\
-        coverEps, "\t", packingEps, "\t",\
+        coverEps, "\t", packingEps, "\t", minSparse, '\t',\
         len(archive)
 
 
@@ -250,7 +297,7 @@ def archiveReport(archive, k, gen, trial):
   """
   # Get sparseness measures
   n = len(archive[0])
-  sparseness, minDistTo1N = getArchiveDistances(archive, k, n)
+  sparseness, minDistTo1N = getPairwiseSparsenessMetrics(archive, k, n)
 
   # If we have a positive sparseness, report those results
   if len(sparseness) > 0:
@@ -284,7 +331,7 @@ def writeVisualizationFile(vizDirName, gen, archive):
   """
   Write a file for reading and visualizing in Paraview
   """
-  filename = "test" + str(gen) + ".csv"
+  filename = "archive" + str(gen) + ".csv"
   dirname = vizDirName.strip()
   fullPathFilename = os.path.join(dirname, filename)
   f = open(fullPathFilename, "w")
@@ -299,8 +346,18 @@ def writeVisualizationFile(vizDirName, gen, archive):
   f.close()
   
 
+def isAlreadyInArchive(archive, x):
+  """
+  Check to see if the candidate is already in the archive.  
+  """
+  already = False
+  for xi in archive:
+    if tuple(xi) == tuple(x):
+      already=True
+  return (already)
+
         
-def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData"):
+def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData", reportFreq=100):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -322,15 +379,24 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
   # Loop through generation counter
   for gen in range(maxGenerations):
     y = mutate(x, pm, sigma)
-    py = computeSparseness(y, archive, k)
-    if (py > rhoMin):
+    #print "DBG: y =", y,
+
+    # Only compute sparseness and consider for admissio
+    # if we've generated a new point.
+    py = 0
+    if not isAlreadyInArchive(archive, y):
+      py = computeSparseness(y, archive, k)
+
+    #print " ---> ", py
+    
+    if (py >= rhoMin):
       archive.append( y )
       if (not vizDirName == "NOVIZ"):
         writeVisualizationFile(vizDirName, gen, archive)
 
     # Report results ever 100 generations
-    if ( (gen % 100) == 0):
-      altArchiveReport(archive, n, gen, trial, 10000, sigma)
+    if ( (gen % reportFreq) == 0):
+      altArchiveReport(archive, n, gen, trial, 10000, sigma, k)
 
     # Select an individual at random from the archive to serve
     # as a parent
@@ -341,6 +407,23 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
   return (archive)
 
 
+def writeArchive(archive, archiveFilename):
+  """
+  Write the archive out to the specified file.
+  """
+  archiveStrings = []
+  for x in archive:
+    outStr = ''
+    for idx in range(len(x)-1):
+      outStr += str(x[idx]) + ','
+    outStr += str(x[-1]) + '\n'
+    archiveStrings.append( outStr )
+    
+  f = open(archiveFilename, 'w')
+  f.writelines(archiveStrings)
+  f.close()
+    
+  
 if __name__ == '__main__':
   configFileName = ""
   if (len(sys.argv) > 1):
@@ -354,8 +437,9 @@ if __name__ == '__main__':
                     "maxGenerations":50000,\
                     "numTrials":30,\
                     "sigma":0.0,\
-                    "archiveDistancesFile":'archiveDistances.out',\
-                    "vizDirName":"visualizationData"}
+                    "archiveFilename":'NOARCHIVEWRITE',\
+                    "vizDirName":"visualizationData",\
+                    "reportFrequency":100}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
 
   print
@@ -370,46 +454,9 @@ if __name__ == '__main__':
                     configObj.sigma,\
                     maxGenerations=configObj.maxGenerations,\
                     allzero=True,
-                    vizDirName=configObj.vizDirName)
+                    vizDirName=configObj.vizDirName,
+                    reportFreq=configObj.reportFrequency)
 
-  # Provide all the distance measures for the archive of the final
-  # trial.
-  if (False):
-    print
-    print "Collecting intra-archive sparseness distances ..."
-    archiveDistances = getArchiveDistances(archive, configObj.k)
-    archiveDistanceStrings = []
-    for dist in archiveDistances:
-      archiveDistanceStrings.append( 'XX: ' + str(dist) + '\n' )
-
-  # Provide some statistics and output
-  if False:
-    if len(archiveDistances) > 0:
-      output = ['\n']
-      output.append("Statistics:\n")
-      output.append("  Genome length:               " + str(configObj.n) + '\n')
-      output.append("  Size of genome space:        " + str(2**configObj.n) + '\n')
-      output.append("  rhoMin:                      " + str(configObj.rhoMin) + '\n')
-      output.append("  Final archive size:          " + str(len(archive)) + '\n')
-      output.append("  Min archive sparseness:      " + str(stats.tmin(archiveDistances)) + '\n')
-      output.append("  Average distance in archive: " + str(stats.tmean(archiveDistances)) + '\n')
-      output.append("  Median distance in archive:  " + str(np.median(archiveDistances)) + '\n')
-      output.append("  Min archive sparseness:      " + str(stats.tmax(archiveDistances)) + '\n')
-      output.append("  StdDev distances in archive: " + str(stats.tstd(archiveDistances)) + '\n')
-      output.append("  IQR distances in archive:    " + str(stats.iqr(archiveDistances)) + '\n') 
-      output.append('\n')
-    else:
-      output = ['\n', 'WARNING:  Archive contained only one candidate\n','\n']
-
-    for myLine in output:
-      sys.stdout.write( myLine )
-
-    # Write the archive distances to a file
-    print "Writing final archive distances to", configObj.archiveDistancesFile
-    print
-  
-    f = open(configObj.archiveDistancesFile, 'w')
-    f.writelines(archiveDistanceStrings)
-    f.writelines(output)
-    f.close()
-  
+  if (not configObj.archiveFilename == 'NOARCHIVEWRITE'):
+    writeArchive(archive, configObj.archiveFilename)
+   

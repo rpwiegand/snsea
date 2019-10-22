@@ -37,10 +37,18 @@ def isInsideEuclideanBoundary(x, low=0, high=1):
   inside = True
   for xitem in x:
     if (xitem < low) or (xitem > high):
-      inside =False
+      inside = False
   return (inside)
 
 
+def inSpecialArea(parent, criteria, variance):
+  special=False
+  if (getDistance(parent, np.array([criteria] * len(parent))) < variance) or\
+     (parent[1] < 0) or (parent[2] < 0) or (parent[0] < 0):
+    special=True
+  return (special)
+    
+  
 def mutate(x, pm, sigma=0.0, bound=[0,1]):
   """
   Mutate the individual, where pm is the probability of mutating for 
@@ -70,8 +78,9 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
     stuckCount = 0
     while (not inside):
       # Check if we're stuck
-      if stuckCount > 100:
-        raise Exception("The re-mutate loop is stuck ... should not take this many iterations to find a good point.")
+      if stuckCount > 50:
+        #raise Exception("The re-mutate loop is stuck ... should not take this many iterations to find a good point.")
+        inside=True
       stuckCount += 1
 
       # Generate a mutation
@@ -81,6 +90,9 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
       # Check if the mutation is inside the bounds
       if (bound==None):
         inside=True
+      #elif (inSpecialArea(x, 0.25, 0.2)):
+      #  inside=True
+      #  print "BOOOOOOOO"
       else:
         inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
 
@@ -268,7 +280,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
 
 
 def altArchiveReportHeader():
-  print "Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t ArchiveSize \t MinArchiveSparseness"
+  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t ArchiveSize \t MinArchiveSparseness"
 
 def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
   """
@@ -283,7 +295,7 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
     sparsenessVals, minAllOne  = getPairwiseSparsenessMetrics(archive, k, n)
     minSparse = min(sparsenessVals)
     
-  print int(trial), "\t", int(gen), "\t",\
+  print "XX:", int(trial), "\t", int(gen), "\t",\
         coverEps, "\t", packingEps, "\t", minSparse, '\t',\
         len(archive)
 

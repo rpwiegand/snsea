@@ -8,7 +8,7 @@ EXPNAME=`ls -l ExperimentParams/*.ini | head -n $SLURM_ARRAY_TASK_ID | tail -n 1
 
 date
 echo "Running snsea against ${EXPNAME} ..."
-module load python/python-2.7.14-gcc-7.1.0
+module load python/python-2.7.14-ic-2017.1.043
 python snsea2.py  ExperimentParams/${EXPNAME}.init > Results/${EXPNAME}.out
 date
 

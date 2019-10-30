@@ -170,9 +170,6 @@ def getPairwiseSparsenessMetrics(archive, k, n):
         xi = archive[idx]
         xj = archive[jdx]
         dist = getDistance(xi,xj)
-        if dist == 1:
-          print "xi=", xi
-          print "xj=", xj
         tmpDistances.append( dist )
         maxDistInArchive = max( [maxDistInArchive, dist] )
           

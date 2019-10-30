@@ -90,6 +90,8 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
       # Check if the mutation is inside the bounds
       if (bound==None):
         inside=True
+      elif (inSpecialArea(x, 0.25, .2)):
+        inside=True
       else:
         inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
 
@@ -358,7 +360,6 @@ def writeVisualizationFile(vizDirName, gen, archive):
   f.write("x, y, z, idx\n")
   for idx in range(len(archive)):
     lineStr = ""
-    #print "YY: ", gen, idx, py, rhoMin,
     for arg in archive[idx]:
       lineStr += str(arg) + ", "
     lineStr += str(idx) + '\n'
@@ -376,6 +377,7 @@ def isAlreadyInArchive(archive, x):
       already=True
   return (already)
 
+
 def isArchiveOutOfBounds(archive, bounds):
   """
   Check to see if there are any points n the archive that are
@@ -391,7 +393,8 @@ def isArchiveOutOfBounds(archive, bounds):
   return(outOfBounds)
 
         
-def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData", reportFreq=100, boundMutation=True):
+def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
+          vizDirName="NOVIZ", reportFreq=100, boundMutation=True):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -469,7 +472,7 @@ if __name__ == '__main__':
   # Configuration parameters for command line and INI file
   configDefaults = {"n":32,\
                     "k":3,\
-                    "rhoMin":2,\
+                    "rhoMin":2.0,\
                     "pm":0.0,\
                     "maxGenerations":50000,\
                     "numTrials":1,\

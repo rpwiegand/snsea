@@ -4,8 +4,10 @@
 #SBATCH -n 1
 #SBATCH --time=1-00:00:00
 
-N=64
-RHOMIN=6
-MAXGEN=100000
+EXPNAME=`ls -l ExperimentParams/*.ini | head -n $SLURM_ARRAY_TASK_ID | tail -n 1 | cut -d"/" -f2 | sed s/".ini"/""/
 
-python snsea.py  --rhoMin=$RHOMIN  --n=$N  --maxGen=$MAXGEN  --archiveDistancesFile=$RHOMIN-$N.out
+date
+echo "Running snsea against ${EXPNAME} ...
+python snsea2.py  ExperimentParams/${EXPNAME}.init > Results/${EXPNAME}.out
+date
+

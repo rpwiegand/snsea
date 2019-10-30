@@ -4,7 +4,7 @@ import configReader
 import scipy.stats as stats
 import os, shutil
 
-def initialize(n, allzero=False, sigma=0.0):
+def initialize(n, allzero=False, sigma=0.0, bounds=(0,1)):
   """
   Initialize the single-population EA.  If the allzero flag is on, then 
   the individual is initialized at the 0^n position.  If sigma is 0, then
@@ -20,9 +20,9 @@ def initialize(n, allzero=False, sigma=0.0):
   if (not allzero and sigma <= 0.0):
     x = np.random.random_integers(low=0, high=1, size=n)
 
-  # If not allzero and we're numeric, init in [0,1]^n
+  # If not allzero and we're numeric, init in [lp,ub]^n
   elif (not allzero and sigma > 0.0):
-    x = np.random.uniform(low=0.0, high=1.0, size=n)
+    x = np.random.uniform(low=bounds[0], high=bounds[1], size=n)
 
   # Return the initialized vector
   return (x)
@@ -90,9 +90,6 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
       # Check if the mutation is inside the bounds
       if (bound==None):
         inside=True
-      #elif (inSpecialArea(x, 0.25, 0.2)):
-      #  inside=True
-      #  print "BOOOOOOOO"
       else:
         inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
 
@@ -155,6 +152,7 @@ def getPairwiseSparsenessMetrics(archive, k, n):
   """
   # Setup the arbitrary "piton" measure (the all 1 binary string)
   minDistTo1N = n
+  maxDistInArchive = 0
   OneN = np.array([1.0]*n)
 
   # Initialize the distances
@@ -169,8 +167,13 @@ def getPairwiseSparsenessMetrics(archive, k, n):
       if (not idx == jdx):
         xi = archive[idx]
         xj = archive[jdx]
-        tmpDistances.append( getDistance(xi,xj) )
-
+        dist = getDistance(xi,xj)
+        if dist == 1:
+          print "xi=", xi
+          print "xj=", xj
+        tmpDistances.append( dist )
+        maxDistInArchive = max( [maxDistInArchive, dist] )
+          
     # Use these pairwise distances to estimate the sparseness of
     # each point in the archive to the rest of the archive
     # (excluding itself).
@@ -184,7 +187,7 @@ def getPairwiseSparsenessMetrics(archive, k, n):
   # Return the sparseness distances for all points in the archive, as well
   # as the minimum distances of any point to the "piton" point at the all 1
   # string.
-  return (distances, minDistTo1N)
+  return (distances, minDistTo1N, maxDistInArchive)
 
 
 def estimatePackingEpsilon(archive, sampleSize, maxPacking=sys.float_info.max):
@@ -219,7 +222,7 @@ def estimatePackingEpsilon(archive, sampleSize, maxPacking=sys.float_info.max):
   return (max(sampleDistances)/2)
 
 
-def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
+def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
   """
   Compute the best epsilon estimate for this archive's epsilon-cover.
   We do this by sampling the whole space and finding the the point
@@ -233,10 +236,13 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
   archiveSize = len(archive)
   sampleSize = min(sampleSize, 2**n)
   sampleDistances = []
+  xi, xj, xk = (None, None, None)
 
   for sampleIdx in range(sampleSize):
+    # Sample a point from the space
+    xj = initialize(n, False, sigma, bounds)
+      
     # Find the closest point in archive to a random point
-    xj = initialize(n, False, sigma) 
     archiveDistances = []
     for idx in range(archiveSize):
       xi = archive[idx]  
@@ -280,7 +286,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0):
 
 
 def altArchiveReportHeader():
-  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t ArchiveSize \t MinArchiveSparseness"
+  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t MaxDistInArchive \t ArchiveSize"
 
 def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
   """
@@ -289,14 +295,16 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
   maxPackingDistance = getDistance(np.array([0]*n), np.array([1]*n))
   packingEps = estimatePackingEpsilon(archive, sampleSize, maxPackingDistance)
   coverEps   = estimateCoverEpsilon(archive, sampleSize, n, sigma)
-
+  maxDistInArchive = 0
+  
   minSparse = -1
   if (len(archive) > 1):
-    sparsenessVals, minAllOne  = getPairwiseSparsenessMetrics(archive, k, n)
+    sparsenessVals, minAllOne, maxDistInArchive  = getPairwiseSparsenessMetrics(archive, k, n)
     minSparse = min(sparsenessVals)
     
-  print "XX:", int(trial), "\t", int(gen), "\t",\
-        coverEps, "\t", packingEps, "\t", minSparse, '\t',\
+  print "XX:", int(trial), '\t', int(gen), '\t',\
+        coverEps, '\t', packingEps, '\t', \
+        minSparse, '\t', '\t', maxDistInArchive, '\t', \
         len(archive)
 
 
@@ -309,7 +317,7 @@ def archiveReport(archive, k, gen, trial):
   """
   # Get sparseness measures
   n = len(archive[0])
-  sparseness, minDistTo1N = getPairwiseSparsenessMetrics(archive, k, n)
+  sparseness, minDistTo1N, maxDistInArchive = getPairwiseSparsenessMetrics(archive, k, n)
 
   # If we have a positive sparseness, report those results
   if len(sparseness) > 0:
@@ -368,8 +376,22 @@ def isAlreadyInArchive(archive, x):
       already=True
   return (already)
 
+def isArchiveOutOfBounds(archive, bounds):
+  """
+  Check to see if there are any points n the archive that are
+  outside the specified bounds.
+  """
+  outOfBounds = False
+  for x in archive:
+    for arg in x:
+      if (arg > max(bounds)):
+        outOfBounds = True
+      elif (arg < min(bounds)):
+        outOfBounds = True
+  return(outOfBounds)
+
         
-def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData", reportFreq=100):
+def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, vizDirName="visualizationData", reportFreq=100, boundMutation=True):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -378,6 +400,7 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
   """
   # Initialize the individual and the archive
   x = initialize(n, allzero, sigma)
+  y = initialize(n, allzero, sigma)
   archive = [x]
 
   # If we've not specified the probability of mutation, assume it is 1/n
@@ -390,8 +413,10 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
 
   # Loop through generation counter
   for gen in range(maxGenerations):
-    y = mutate(x, pm, sigma)
-    #print "DBG: y =", y,
+    if boundMutation:
+      y = mutate(x, pm, sigma, (0,1))
+    else:
+      y = mutate(x, pm, sigma, None)
 
     # Only compute sparseness and consider for admissio
     # if we've generated a new point.
@@ -444,14 +469,15 @@ if __name__ == '__main__':
   # Configuration parameters for command line and INI file
   configDefaults = {"n":32,\
                     "k":3,\
-                    "rhoMin":0.25,\
+                    "rhoMin":2,\
                     "pm":0.0,\
                     "maxGenerations":50000,\
-                    "numTrials":30,\
+                    "numTrials":1,\
                     "sigma":0.0,\
                     "archiveFilename":'NOARCHIVEWRITE',\
-                    "vizDirName":"visualizationData",\
-                    "reportFrequency":100}
+                    "vizDirName":"NOVIZ",\
+                    "reportFrequency":1,\
+                    "boundMutation":True}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
 
   print
@@ -467,7 +493,10 @@ if __name__ == '__main__':
                     maxGenerations=configObj.maxGenerations,\
                     allzero=True,
                     vizDirName=configObj.vizDirName,
-                    reportFreq=configObj.reportFrequency)
+                    reportFreq=configObj.reportFrequency,\
+                    boundMutation=configObj.boundMutation)
+    if (isArchiveOutOfBounds(archive, (0,1))):
+      print "Trial: ", trial, " archive contains points OUTOFBOUNDS"
 
   if (not configObj.archiveFilename == 'NOARCHIVEWRITE'):
     writeArchive(archive, configObj.archiveFilename)

@@ -306,6 +306,9 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
         minSparse, '\t', '\t', maxDistInArchive, '\t', \
         len(archive)
 
+  # Flush standard out so we see the output in a timely fashion
+  sys.stdout.flush()
+
 
 def archiveReportHeader():
   print "Trial \t Generation \t MinSparseness \t AvgSparseness \t MaxSparseness \t ArchiveSize \t MinDistToN"
@@ -479,6 +482,9 @@ if __name__ == '__main__':
                     "reportFrequency":1,\
                     "boundMutation":True}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
+  
+  # Flush std I/O so that it prints early during long runs
+  sys.stdout.flush()
 
   print
   print "Running SNS-EA ..."

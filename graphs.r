@@ -4,7 +4,7 @@ library(reshape2)
 library(RColorBrewer)
 library(latex2exp)
 
-results <- read.table('results-sig-0.3-k-3-rho-0.6.out', header=T)
+results <- read.table('Results/results-sig-0.3-k-3-rho-0.6.out', header=T)
 aggregatedResults <- summarise(group_by(results, Generation), 
                                AvgCover=mean(CoverEpsilon),
                                AvgPacking=mean(PackingEpsilon),

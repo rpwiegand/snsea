@@ -49,7 +49,7 @@ def inSpecialArea(parent, criteria, variance):
   return (special)
     
   
-def mutate(x, pm, sigma=0.0, bound=[0,1]):
+def mutate(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
   """
   Mutate the individual, where pm is the probability of mutating for 
   binary representation (ignored for numeric), and sigma is the Gaussian
@@ -90,7 +90,7 @@ def mutate(x, pm, sigma=0.0, bound=[0,1]):
       # Check if the mutation is inside the bounds
       if (bound==None):
         inside=True
-      elif (inSpecialArea(x, 0.25, .2)):
+      elif (useEscapeSphere) and (inSpecialArea(x, 0.25, .2)):
         inside=True
       else:
         inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
@@ -394,7 +394,7 @@ def isArchiveOutOfBounds(archive, bounds):
 
         
 def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
-          vizDirName="NOVIZ", reportFreq=100, boundMutation=True):
+          vizDirName="NOVIZ", reportFreq=100, boundMutation=True, useEscapeSphere=False):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -417,9 +417,9 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
   # Loop through generation counter
   for gen in range(maxGenerations):
     if boundMutation:
-      y = mutate(x, pm, sigma, (0,1))
+      y = mutate(x, pm, sigma, (0,1), useEscapeSphere)
     else:
-      y = mutate(x, pm, sigma, None)
+      y = mutate(x, pm, sigma, None, useEscapeSphere)
 
     # Only compute sparseness and consider for admissio
     # if we've generated a new point.
@@ -480,7 +480,8 @@ if __name__ == '__main__':
                     "archiveFilename":'NOARCHIVEWRITE',\
                     "vizDirName":"NOVIZ",\
                     "reportFrequency":1,\
-                    "boundMutation":True}
+                    "boundMutation":True,
+                    "useEscapeSphere":False}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs
@@ -500,7 +501,8 @@ if __name__ == '__main__':
                     allzero=True,
                     vizDirName=configObj.vizDirName,
                     reportFreq=configObj.reportFrequency,\
-                    boundMutation=configObj.boundMutation)
+                    boundMutation=configObj.boundMutation,
+                    useEscapeSphere=configObj.useEscapeSphere)
     if (isArchiveOutOfBounds(archive, (0,1))):
       print "Trial: ", trial, " archive contains points OUTOFBOUNDS"
 

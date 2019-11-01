@@ -14,7 +14,9 @@
 14:hamming-r2-n4
 15:hamming-r1-n4
 16:bounded-rv-s0.65-r0.6
-17:bounded-rv-s0.75-r0.6
-18:bounded-rv-s0.35-r0.6
-19:bounded-rv-s0.3-r0.6
+17:bounded-rv-s0.7-r0.6
+18:bounded-rv-s0.75-r0.6
+19:bounded-rv-s0.35-r0.6
+20:bounded-rv-s0.3-r0.6
+21:bounded-rv-s0.25-r0.6
 

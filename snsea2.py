@@ -285,9 +285,9 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
 
 
 def altArchiveReportHeader():
-  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t MaxDistInArchive \t ArchiveSize"
+  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize"
 
-def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
+def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
   """
   Print output for the trial and various epsilon metrics
   """
@@ -303,7 +303,7 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k):
     
   print "XX:", int(trial), '\t', int(gen), '\t',\
         coverEps, '\t', packingEps, '\t', \
-        minSparse, '\t', '\t', maxDistInArchive, '\t', \
+        minSparse, '\t', \
         len(archive)
 
   # Flush standard out so we see the output in a timely fashion
@@ -427,16 +427,17 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
     if not isAlreadyInArchive(archive, y):
       py = computeSparseness(y, archive, k)
 
-    #print " ---> ", py
-    
     if (py >= rhoMin):
       archive.append( y )
       if (not vizDirName == "NOVIZ"):
         writeVisualizationFile(vizDirName, gen, archive)
 
     # Report results ever 100 generations
-    if ( (gen % reportFreq) == 0):
+    if ( (gen % reportFreq) == 0) and (boundMutation):
       altArchiveReport(archive, n, gen, trial, 10000, sigma, k)
+    else:
+      upperBound = sigma * maxGenerations
+      altArchiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))
 
     # Select an individual at random from the archive to serve
     # as a parent

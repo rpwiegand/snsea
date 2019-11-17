@@ -434,7 +434,7 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
 
     # Report results ever 100 generations
     if ( (gen % reportFreq) == 0) and (boundMutation):
-      altArchiveReport(archive, n, gen, trial, 10000, sigma, k)
+      altArchiveReport(archive, n, gen, trial, 10000, sigma, k, None)
     else:
       upperBound = sigma * maxGenerations
       altArchiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))

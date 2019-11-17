@@ -477,6 +477,7 @@ if __name__ == '__main__':
                     "pm":0.0,\
                     "maxGenerations":50000,\
                     "numTrials":1,\
+                    "startTrialNum":0,\
                     "sigma":0.0,\
                     "archiveFilename":'NOARCHIVEWRITE',\
                     "vizDirName":"NOVIZ",\
@@ -491,7 +492,7 @@ if __name__ == '__main__':
   print
   print "Running SNS-EA ..."
   altArchiveReportHeader()
-  for trial in range(configObj.numTrials):
+  for trial in range(startTrialNum, startTrialNum+configObj.numTrials):
     archive = snsea(configObj.n,\
                     configObj.rhoMin,\
                     configObj.k,\

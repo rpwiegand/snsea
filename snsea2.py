@@ -492,7 +492,7 @@ if __name__ == '__main__':
   print
   print "Running SNS-EA ..."
   altArchiveReportHeader()
-  for trial in range(startTrialNum, startTrialNum+configObj.numTrials):
+  for trial in range(configObj.startTrialNum, configObj.startTrialNum+configObj.numTrials):
     archive = snsea(configObj.n,\
                     configObj.rhoMin,\
                     configObj.k,\

@@ -4,7 +4,7 @@ import configReader
 import scipy.stats as stats
 import os, shutil
 
-def initialize(n, allzero=False, sigma=0.0, bounds=(0,1)):
+def initializeIndividual(n, allzero=False, sigma=0.0, bounds=(0,1)):
   """
   Initialize the single-population EA.  If the allzero flag is on, then 
   the individual is initialized at the 0^n position.  If sigma is 0, then
@@ -42,6 +42,9 @@ def isInsideEuclideanBoundary(x, low=0, high=1):
 
 
 def inSpecialArea(parent, criteria, variance):
+  """
+  Is the parent inside a special criteria boundary.
+  """
   special=False
   if (getDistance(parent, np.array([criteria] * len(parent))) < variance) or\
      (parent[1] < 0) or (parent[2] < 0) or (parent[0] < 0):
@@ -49,7 +52,7 @@ def inSpecialArea(parent, criteria, variance):
   return (special)
     
   
-def mutate(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
+def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
   """
   Mutate the individual, where pm is the probability of mutating for 
   binary representation (ignored for numeric), and sigma is the Gaussian
@@ -239,7 +242,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
 
   for sampleIdx in range(sampleSize):
     # Sample a point from the space
-    xj = initialize(n, False, sigma, bounds)
+    xj = initializeIndividual(n, False, sigma, bounds)
       
     # Find the closest point in archive to a random point
     archiveDistances = []
@@ -284,10 +287,10 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
 #################################################################
 
 
-def altArchiveReportHeader():
+def archiveReportHeader():
   print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize"
 
-def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
+def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
   """
   Print output for the trial and various epsilon metrics
   """
@@ -310,34 +313,10 @@ def altArchiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
   sys.stdout.flush()
 
 
-def archiveReportHeader():
-  print "Trial \t Generation \t MinSparseness \t AvgSparseness \t MaxSparseness \t ArchiveSize \t MinDistToN"
-
-def archiveReport(archive, k, gen, trial):
-  """
-  Print output for the trial and various sparseness measures.
-  """
-  # Get sparseness measures
-  n = len(archive[0])
-  sparseness, minDistTo1N, maxDistInArchive = getPairwiseSparsenessMetrics(archive, k, n)
-
-  # If we have a positive sparseness, report those results
-  if len(sparseness) > 0:
-    print int(trial), "\t", int(gen), "\t",\
-          min(sparseness), "\t", np.mean(sparseness), "\t", max(sparseness), "\t",\
-          len(archive), "\t", int(minDistTo1N)
-
-  # Otherwise, report just the minimum distance to the all 1 string
-  else:
-    print int(trial), "\t", int(gen), "\t",\
-          0.0, "\t", 0.0, "\t", float(n), "\t",\
-          len(archive), int(minDistTo1N)
-
-  # Flush standard out so we see the output in a timely fashion
-  sys.stdout.flush()
-
-
 def clearVisualizationDir(vizDirName):
+  """
+  Wipe out the directory we're writing for the visualization.
+  """
   try:
     shutil.rmtree(vizDirName)
   except:
@@ -393,60 +372,6 @@ def isArchiveOutOfBounds(archive, bounds):
   return(outOfBounds)
 
         
-def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
-          vizDirName="NOVIZ", reportFreq=100, boundMutation=True, useEscapeSphere=False):
-  """
-  This is the main routine for the program.  It takes the mutation probability information,
-  the size of the string, the sparseness criteral and runs until maxGenerations is hit.
-  We give it which trial it is working on so that the reporting method knows; however, the
-  EA itself doesn't know or care.
-  """
-  # Initialize the individual and the archive
-  x = initialize(n, allzero, sigma)
-  y = initialize(n, allzero, sigma)
-  archive = [x]
-
-  # If we've not specified the probability of mutation, assume it is 1/n
-  if (pm <= 0.0):
-    pm = 1.0/float(n)
-
-  # If we're writing for paraview visualization, clear the directory
-  if (not vizDirName == "NOVIZ"):
-    clearVisualizationDir(vizDirName)
-
-  # Loop through generation counter
-  for gen in range(maxGenerations):
-    if boundMutation:
-      y = mutate(x, pm, sigma, (0,1), useEscapeSphere)
-    else:
-      y = mutate(x, pm, sigma, None, useEscapeSphere)
-
-    # Only compute sparseness and consider for admissio
-    # if we've generated a new point.
-    py = 0
-    if not isAlreadyInArchive(archive, y):
-      py = computeSparseness(y, archive, k)
-
-    if (py >= rhoMin):
-      archive.append( y )
-      if (not vizDirName == "NOVIZ"):
-        writeVisualizationFile(vizDirName, gen, archive)
-
-    # Report results ever 100 generations
-    if ( (gen % reportFreq) == 0) and (boundMutation):
-      altArchiveReport(archive, n, gen, trial, 10000, sigma, k, None)
-    else:
-      upperBound = sigma * maxGenerations
-      altArchiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))
-
-    # Select an individual at random from the archive to serve
-    # as a parent
-    randSelectIdx = np.random.random_integers(low=0, high=(len(archive)-1))
-    x = archive[randSelectIdx]
-
-  # Return the archive, which is the solution in this case
-  return (archive)
-
 
 def writeArchive(archive, archiveFilename):
   """
@@ -463,51 +388,29 @@ def writeArchive(archive, archiveFilename):
   f = open(archiveFilename, 'w')
   f.writelines(archiveStrings)
   f.close()
+
+
+def unitTest():
+  print("Testing the snseaBase sparseness calculuations...")
+
+  # Create a random archive of four individuals
+  archive = []
+  for idx in range(4):
+   archive.append( np.random.uniform(low=0.0, high=1.0, size=2) )
+
+  # Create an individual to which to compare
+  y  = np.array([0.0, 0.0])
+  py = computeSparseness(y, archive, 3)
+
+  # Show the archive
+  print "Archive:"
+  for x in archive:
+    print "  ", x
     
+  print
+  print "y          =", y
+  print "Sparseness =", py
+  print
   
 if __name__ == '__main__':
-  configFileName = ""
-  if (len(sys.argv) > 1):
-    configFileName = sys.argv[1].strip()
-  
-  # Configuration parameters for command line and INI file
-  configDefaults = {"n":32,\
-                    "k":3,\
-                    "rhoMin":2.0,\
-                    "pm":0.0,\
-                    "maxGenerations":50000,\
-                    "numTrials":1,\
-                    "startTrialNum":0,\
-                    "sigma":0.0,\
-                    "archiveFilename":'NOARCHIVEWRITE',\
-                    "vizDirName":"NOVIZ",\
-                    "reportFrequency":1,\
-                    "boundMutation":True,
-                    "useEscapeSphere":False}
-  configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
-  
-  # Flush std I/O so that it prints early during long runs
-  sys.stdout.flush()
-
-  print
-  print "Running SNS-EA ..."
-  altArchiveReportHeader()
-  for trial in range(configObj.startTrialNum, configObj.startTrialNum+configObj.numTrials):
-    archive = snsea(configObj.n,\
-                    configObj.rhoMin,\
-                    configObj.k,\
-                    trial,\
-                    configObj.pm,\
-                    configObj.sigma,\
-                    maxGenerations=configObj.maxGenerations,\
-                    allzero=True,
-                    vizDirName=configObj.vizDirName,
-                    reportFreq=configObj.reportFrequency,\
-                    boundMutation=configObj.boundMutation,
-                    useEscapeSphere=configObj.useEscapeSphere)
-    if (isArchiveOutOfBounds(archive, (0,1))):
-      print "Trial: ", trial, " archive contains points OUTOFBOUNDS"
-
-  if (not configObj.archiveFilename == 'NOARCHIVEWRITE'):
-    writeArchive(archive, configObj.archiveFilename)
-   
+  unitTest()

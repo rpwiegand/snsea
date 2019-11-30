@@ -132,55 +132,56 @@ plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, savePDF=False) {
 
 
 plotHammingCoverPacking <- function(rhoMin=3, n=16, savePDF=False) {
-filename=paste("Results/hamming-r", rhoMin, "-n", n, ".out", sep='') 
+  filename=paste("Results/hamming-r", rhoMin, "-n", n, ".out", sep='') 
 
-results <- read.table(filename, header=T)
-maxMinSpar <- max(results$MinArchiveSparseness)
-minY <- min(results$MinArchiveSparseness)
-maxY <- max(results$CoverEpsilon)
+  results <- read.table(filename, header=T)
+  
+  maxMinSpar <- max(results$MinArchiveSparseness)
+  minY <- min(results$MinArchiveSparseness)
+  maxY <- max(results$CoverEpsilon)
 
-aggregatedResults <- summarise(group_by(results, Generation), 
-                               AvgCover=mean(CoverEpsilon),
-                               AvgPacking=mean(PackingEpsilon),
-                               AvgMinSparseness=mean(MinArchiveSparseness))
+  aggregatedResults <- summarise(group_by(results, Generation), 
+                                 AvgCover=mean(CoverEpsilon),
+                                 AvgPacking=mean(PackingEpsilon),
+                                 AvgMinSparseness=mean(MinArchiveSparseness))
 
-longAggregatedResults <- filter(melt(aggregatedResults, id.vars=c("Generation")),
-                                Generation < 200)
-longAggregatedResults <- mutate(longAggregatedResults,
-                                variable = factor(variable,
-                                                  levels=c("AvgCover",
-                                                           "AvgPacking",
-                                                           "AvgMinSparseness"),
-                                                  ordered=T))
+  longAggregatedResults <- filter(melt(aggregatedResults, id.vars=c("Generation")),
+                                  Generation < 200)
+  longAggregatedResults <- mutate(longAggregatedResults,
+                                  variable = factor(variable,
+                                                    levels=c("AvgCover",
+                                                             "AvgPacking",
+                                                             "AvgMinSparseness"),
+                                                    ordered=T))
 
-maxGen <- max(longAggregatedResults$Generation)
-rhoMinLabel = paste("$\\rho_{min} =", rhoMin, "$")
-nLabel  = paste("Bit-flip mutation using $1/n$")
-titleLabel = paste("Hamming Space, n=", n)
-keyPoint <- findKeyPoint(results)
+  maxGen <- max(longAggregatedResults$Generation)
+  rhoMinLabel = paste("$\\rho_{min} =", rhoMin, "$")
+  nLabel  = paste("Bit-flip mutation using $1/n$")
+  titleLabel = paste("Hamming Space, n=", n)
+  keyPoint <- findKeyPoint(results)
 
-p1 <- ggplot(longAggregatedResults, aes(x=Generation, y=value, group=variable, color=variable)) + 
-  geom_hline(yintercept=0.6, size=0.5, color="black", linetype="longdash") +
-  geom_line(size=1.25) +
-  ylim(c(minY, maxY)) +
-  annotate("text", x=maxGen, y=1, label=TeX(rhoMinLabel), hjust=1, size=5) +
-  annotate("text", x=maxGen, y=11.25, label=TeX("Eventually converges to $\\epsilon$-Net"),
-           vjust=1, hjust=1, size=4, color="firebrick") +
-  scale_color_brewer(name="Archive\nMeasure",
-                     palette="Set1",
-                     labels=c("Cover\nEpsilon\n",
-                              "Packing\nEpsilon\n", 
-                              "Minimum\nSparseness")) +
-  xlab("Generation") +
-  ylab("Measure") +
-  ggtitle(titleLabel, subtitle=TeX(nLabel)) +
-  theme(text=element_text(family="Times", size=16))
+  p1 <- ggplot(longAggregatedResults, aes(x=Generation, y=value, group=variable, color=variable)) + 
+    geom_hline(yintercept=0.6, size=0.5, color="black", linetype="longdash") +
+    geom_line(size=1.25) + 
+    ylim(c(minY, maxY)) +
+    annotate("text", x=maxGen, y=1, label=TeX(rhoMinLabel), hjust=1, size=5) +
+    annotate("text", x=maxGen, y=9.75, label=TeX("Converges to $\\epsilon$-Net"),
+             vjust=1, hjust=1, size=4, color="firebrick") +
+    scale_color_brewer(name="Archive\nMeasure",
+                       palette="Set1",
+                       labels=c("Cover\nEpsilon\n",
+                                "Packing\nEpsilon\n", 
+                                "Minimum\nSparseness")) +
+    xlab("Generation") +
+    ylab("Measure") +
+    ggtitle(titleLabel, subtitle=TeX(nLabel)) +
+    theme(text=element_text(family="Times", size=16))
 
-print(p1)
+  print(p1)
 
-if (savePDF) {
-  pdfFilename = gsub("Results", "Graphs", gsub("out", "pdf", filename))
-  print(paste("Saving to file", pdfFilename))
-  ggsave(pdfFilename, width=5, height=4, units="in")
+  if (savePDF) {
+    pdfFilename = gsub("Results", "Graphs", gsub("out", "pdf", filename))
+    print(paste("Saving to file", pdfFilename))
+    ggsave(pdfFilename, width=5, height=4, units="in")
   }
 }

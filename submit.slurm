@@ -12,6 +12,6 @@ EXPNAME=`grep "^${SLURM_ARRAY_TASK_ID}:" exp-manifest.txt | cut -d":" -f2`
 date
 echo "Running snsea against ${EXPNAME} ..."
 module load python/python-2.7.14-ic-2017.1.043
-python snsea2.py  ExperimentParams/${EXPNAME}.ini > Results/${EXPNAME}.raw
+python snseaPopuluation.py  ExperimentParams/${EXPNAME}.ini > Results/${EXPNAME}.raw
 date
 

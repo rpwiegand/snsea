@@ -86,8 +86,8 @@ if __name__ == '__main__':
   # Flush std I/O so that it prints early during long runs
   sys.stdout.flush()
 
-  print
-  print "Running SNS-EA ..."
+  print()
+  print("Running SNS-EA ...")
   sb.archiveReportHeader()
   for trial in range(configObj.startTrialNum, configObj.startTrialNum+configObj.numTrials):
     archive = snsea(configObj.n,\
@@ -103,7 +103,7 @@ if __name__ == '__main__':
                     boundMutation=configObj.boundMutation,\
                     useEscapeSphere=configObj.useEscapeSphere)
     if (isArchiveOutOfBounds(archive, (0,1))):
-      print "Trial: ", trial, " archive contains points OUTOFBOUNDS"
+      print("Trial: ", trial, " archive contains points OUTOFBOUNDS")
 
   if (not configObj.archiveFilename == 'NOARCHIVEWRITE'):
     sb.writeArchive(archive, configObj.archiveFilename)

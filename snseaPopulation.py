@@ -66,9 +66,9 @@ def selectNewParents(population, k, mu):
 
   # Sort these, then strip out the mu best individuals
   sortablePopulation.sort(key=lambda tup: tup[0])
-  newParents = list(zip(*sortablePopulation)[1])[0:mu]
-
-  return newParents
+  newParents = list(zip(*sortablePopulation))[1][0:mu]
+  
+  return list(newParents)
 
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
@@ -122,7 +122,7 @@ if __name__ == '__main__':
   configDefaults = {"n":32,\
                     "k":3,\
                     "mu":5,\
-                    "llambda":20,\
+                    "llambda":35,\
                     "rhoMin":2.0,\
                     "pm":0.0,\
                     "maxGenerations":500,\
@@ -131,14 +131,14 @@ if __name__ == '__main__':
                     "sigma":0.0,\
                     "reportFrequency":1,\
                     "boundMutation":True,\
-                    "usePlusStrategy":True}
+                    "usePlusStrategy":False}
   configObj = configReader.buildArgObject(configFileName, 'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs
   sys.stdout.flush()
 
-  print
-  print "Running SNS-EA ..."
+  print()
+  print("Running population-based SNS-EA ...")
   sb.archiveReportHeader()
   for trial in range(configObj.startTrialNum, configObj.startTrialNum+configObj.numTrials):
     archive = snsea(configObj.n,\

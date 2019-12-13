@@ -9,7 +9,7 @@ preferred over config file entries, which are preferred over the defaults.
 """
 
 import os, sys
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import re
 
 class empty(object):
@@ -64,9 +64,9 @@ def strToList(rawStr, defaultList):
     try:
       returnList.append( listItemType(item.strip()) )
     except:
-      print "Warning:  Config Reader could not parse list item", item, \
+      print("Warning:  Config Reader could not parse list item", item, \
             "because it is not of expected type", listItemType.__name__, \
-            ".  Using default list instead."
+            ".  Using default list instead.")
       returnList = defaultList
       break
 
@@ -115,8 +115,8 @@ def getKeyedIniParams(filename, sectionname, defaultDict):
 
   if not os.path.isfile(filename):
     if (not filename[0] == '-') and (not GLOBAL_QUIET):
-      print "Warning:  File", filename, "does not appear to exist."
-      print
+      print("Warning:  File", filename, "does not appear to exist.")
+      print()
     return iniParams
   
   try:
@@ -124,14 +124,14 @@ def getKeyedIniParams(filename, sectionname, defaultDict):
     parser.read(filename)
     sections = parser.sections()
   except:
-    print "Warning: Could not read config file", filename
-    print
+    print("Warning: Could not read config file", filename)
+    print()
     return iniParams
 
   if not sectionname in sections:
-    print "Warning:  Config file", filename, "contains no section called", sectionname
-    print "Sections:", sections
-    print
+    print("Warning:  Config file", filename, "contains no section called", sectionname)
+    print("Sections:", sections)
+    print()
     return iniParams
 
   for key in defaultDict:
@@ -158,12 +158,12 @@ def checkForHelpParam(defaultDict):
   for cmdParam in sys.argv:
     if (cmdParam.strip().strip('-').lower()[0:4] == "help"):
       helpFlag =True
-      print
-      print "Below is a list of the parameters for this program and their default values."
-      print "Parameters can be set in a configuration file or at the command line."
+      print()
+      print("Below is a list of the parameters for this program and their default values.")
+      print("Parameters can be set in a configuration file or at the command line.")
       for key in defaultDict:
-        print "  ",key,"=", defaultDict[key]
-      print
+        print("  ",key,"=", defaultDict[key])
+      print()
       
   return helpFlag
 
@@ -188,7 +188,7 @@ def buildArgObject(filename, sectionname, defaultDict, quiet=False):
     iniParamsDict = getKeyedIniParams(filename,sectionname,defaultDict)
 
   if (not quiet) and (len(iniParamsDict) > 0):
-    print "Loaded some config params from config file", filename, "from section", sectionname
+    print("Loaded some config params from config file", filename, "from section", sectionname)
 
   argObject = empty()
   outputLines = []
@@ -223,16 +223,16 @@ def buildArgObject(filename, sectionname, defaultDict, quiet=False):
       requiredFailureFlag = True
 
   if (not quiet):
-    print
-    print "Configuration parameters:"
+    print()
+    print("Configuration parameters:")
     for line in outputLines:
-      print line
-    print
+      print(line)
+    print()
 
   if requiredFailureFlag:
-    print
-    print "ERROR:  At least one required parameter was not set."
-    print
+    print()
+    print("ERROR:  At least one required parameter was not set.")
+    print()
     sys.exit(1)
     
   return argObject

@@ -207,7 +207,7 @@ def estimatePackingEpsilon(archive, sampleSize, maxPacking=sys.float_info.max):
   for idx in range(archiveSize):
     # Shuffle all the indexes to other points in
     # the archive, except this point
-    shuffledIndexes = range(archiveSize)
+    shuffledIndexes = list(range(archiveSize))
     shuffledIndexes.remove(idx)
     np.random.shuffle(shuffledIndexes)
 
@@ -288,7 +288,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
 
 
 def archiveReportHeader():
-  print "XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize"
+  print("XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize")
 
 def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
   """
@@ -304,10 +304,10 @@ def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
     sparsenessVals, minAllOne, maxDistInArchive  = getPairwiseSparsenessMetrics(archive, k, n)
     minSparse = min(sparsenessVals)
     
-  print "XX:", int(trial), '\t', int(gen), '\t',\
+  print("XX:", int(trial), '\t', int(gen), '\t',\
         coverEps, '\t', packingEps, '\t', \
         minSparse, '\t', \
-        len(archive)
+        len(archive))
 
   # Flush standard out so we see the output in a timely fashion
   sys.stdout.flush()
@@ -320,12 +320,12 @@ def clearVisualizationDir(vizDirName):
   try:
     shutil.rmtree(vizDirName)
   except:
-    print "Could not remove directory:", vizDirName
+    print("Could not remove directory:", vizDirName)
 
   try:
     os.mkdir(vizDirName)
   except:
-    print "Could not make directory:", vizDirName
+    print("Could not make directory:", vizDirName)
 
     
 def writeVisualizationFile(vizDirName, gen, archive):
@@ -403,14 +403,14 @@ def unitTest():
   py = computeSparseness(y, archive, 3)
 
   # Show the archive
-  print "Archive:"
+  print("Archive:")
   for x in archive:
-    print "  ", x
+    print("  ", x)
     
-  print
-  print "y          =", y
-  print "Sparseness =", py
-  print
+  print()
+  print("y          =", y)
+  print("Sparseness =", py)
+  print()
   
 if __name__ == '__main__':
   unitTest()

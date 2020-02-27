@@ -30,7 +30,7 @@ plotBoundedCoverPacking <- function(rhoMin=0.6, sigma=0.3, savePDF=False) {
                                                     ordered=T))
 
   rhoMinLabel = paste("$\\rho_{min} =", rhoMin, "$")
-  sigmaLabel  = paste("Guassian Mutation $\\sigma = ", sigma, "$")
+  sigmaLabel  = paste("Gaussian Mutation $\\sigma = ", sigma, "$")
   titleLabel = paste("Bounded 3D Euclidean Space")
   #keyPoint <- findKeyPoint(results)
   keyPoint <- c(25, 0.75)
@@ -73,9 +73,10 @@ plotBoundedCoverPacking <- function(rhoMin=0.6, sigma=0.3, savePDF=False) {
 }
 
 
-plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, savePDF=False) {
+plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, suffix="-pop2c8", savePDF=False) {
   #filename="Results/unbounded-sig-0.1-k-3-rho-0.4-population.out"
-  filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, "-pop2c8.out", sep='') 
+  #filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, "-pop2c8.out", sep='') 
+  filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, suffix,".out", sep='') 
   
   results <- read.table(filename, header=T)
   maxMinSpar <- max(results$MinArchiveSparseness)
@@ -88,7 +89,7 @@ plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, savePDF=False) {
                                  AvgMinSparseness=mean(MinArchiveSparseness))
   
   longAggregatedResults <- filter(melt(aggregatedResults, id.vars=c("Generation")),
-                                  Generation < 100)
+                                  Generation < 500)
   longAggregatedResults <- mutate(longAggregatedResults,
                                   variable = factor(variable,
                                                     levels=c("AvgCover",
@@ -101,14 +102,14 @@ plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, savePDF=False) {
   maxGen <- max(longAggregatedResults$Generation)
   rhoMinLabel = paste("$\\rho_{min} =", rhoMin, "$")
   sigmaLabel  = paste("Guassian Mutation $\\sigma = ", sigma, "$")
-  titleLabel = paste("Unounded 3D Euclidean Space")
+  titleLabel = paste("Unbounded 3D Euclidean Space")
   keyPoint <- findKeyPoint(results)
   
   p1 <- ggplot(longAggregatedResults, aes(x=Generation, y=value, group=variable, color=variable)) + 
     geom_hline(yintercept=rhoMin, size=0.5, color="black", linetype="longdash") +
     geom_line(size=1.25) +
     ylim(c(minY, maxY)) +
-    annotate("text", x=maxGen, y=rhoMin-0.01, label=TeX(rhoMinLabel), hjust=1, size=5) +
+    annotate("text", x=-20, y=rhoMin+0.25, label=TeX(rhoMinLabel), hjust=0, size=3.5) +
     #annotate("text", x=170, y=1.9, label="Packing continues to increase\nbut space is no longer\nbeing covered",
     #         vjust=1, hjust=0, size=4, color="darkblue") +
     annotate("text", x=maxGen, y=1.8, label=TeX("Eventually converges to $\\epsilon$-Net"),

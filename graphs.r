@@ -73,10 +73,20 @@ plotBoundedCoverPacking <- function(rhoMin=0.6, sigma=0.3, savePDF=False) {
 }
 
 
+estimateConvergenceRate <- function(filename) {
+  print(paste("Reading file: ", filename), quote=F)
+  results <- read.table(filename, header=T)
+  aggregatedResults <- summarise(group_by(results, Generation), 
+                                 AvgCoverPackingDiff=max(mean(CoverEpsilon) - mean(PackingEpsilon),0))
+  aggregatedResults <- mutate(aggregatedResults,
+                              ScaledCPDiff = AvgCoverPackingDiff/(max(AvgCoverPackingDiff)-min(AvgCoverPackingDiff)) - min(AvgCoverPackingDiff))
+  return(sum(aggregatedResults$ScaledCPDiff))
+}
+
+
 plotUnboundedCoverPacking <- function(rhoMin=0.6, sigma=0.2, suffix="-pop2c8", savePDF=False) {
-  #filename="Results/unbounded-sig-0.1-k-3-rho-0.4-population.out"
-  #filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, "-pop2c8.out", sep='') 
   filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, suffix,".out", sep='') 
+  print(paste("Reading file: ", filename), quote=F)
   
   results <- read.table(filename, header=T)
   maxMinSpar <- max(results$MinArchiveSparseness)

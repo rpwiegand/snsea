@@ -6,7 +6,7 @@ import os, shutil
 import snseaBase as sb
 
 
-        
+
 def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
           vizDirName="NOVIZ", reportFreq=100, boundMutation=True, useEscapeSphere=False):
   """
@@ -55,18 +55,22 @@ def snsea(n, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=Tr
 
     # Select an individual at random from the archive to serve
     # as a parent
-    randSelectIdx = np.random.random_integers(low=0, high=(len(archive)-1))
+    #randSelectIdx = np.random.random_integers(low=0, high=(len(archive)-1))
+    if (len(archive) <= 1):
+      randSelectIdx = 0
+    else:
+      randSelectIdx = np.random.randint(low=0, high=(len(archive)-1))
     x = archive[randSelectIdx]
 
   # Return the archive, which is the solution in this case
   return (archive)
 
-  
+
 if __name__ == '__main__':
   configFileName = ""
   if (len(sys.argv) > 1):
     configFileName = sys.argv[1].strip()
-  
+
   # Configuration parameters for command line and INI file
   configDefaults = {"n":32,\
                     "k":3,\
@@ -82,7 +86,7 @@ if __name__ == '__main__':
                     "boundMutation":True,\
                     "useEscapeSphere":False}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
-  
+
   # Flush std I/O so that it prints early during long runs
   sys.stdout.flush()
 
@@ -107,4 +111,3 @@ if __name__ == '__main__':
 
   if (not configObj.archiveFilename == 'NOARCHIVEWRITE'):
     sb.writeArchive(archive, configObj.archiveFilename)
-   

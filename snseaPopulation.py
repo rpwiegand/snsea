@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import configReader
 import scipy.stats as stats
-import os, shutil
+import os, shutil, os.path
 import snseaBase as sb
 
 
@@ -72,7 +72,7 @@ def selectNewParents(population, k, mu):
 
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
-          reportFreq=100, boundMutation=True, plusStrategy=True):
+          reportFreq=100, boundMutation=True, plusStrategy=True, vizDirName="NONE", msrChildren=False):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -104,14 +104,65 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     # Report results ever 100 generations
     if ( (gen % reportFreq) == 0) and (boundMutation):
       sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, None)
+    elif (msrChildren):
+      sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound), children)
     else:
       sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))
+
+    if (not vizDirName == "NONE"):
+       writeVisualizationFilePop(vizDirName, trial, gen, archive, children, parents)
 
     parents = selectNewParents(children + parents, k, mu)
 
   # Return the archive, which is the solution in this case
   return (archive)
 
+
+def writeVisualizationFilePop(vizDirName, trial, gen, archive, children, parents):
+  """
+  Write a file for reading and visualizing in Paraview
+  """
+  # Get file handle read for writing
+  filename = "viz-archive-and-pop.csv"
+  dirname = vizDirName.strip()
+  fullPathFilename = os.path.join(dirname, filename)
+  
+  # Open file and write the header
+  if (not os.path.exists(fullPathFilename)):
+    f = open(fullPathFilename, "w")
+    f.write("trial,generation,whichPop,x,y,idx\n")
+  else:
+    f = open(fullPathFilename, "a+")
+
+  # Write the archive
+  for idx in range(len(archive)):
+    lineStr = str(trial) + ","
+    lineStr += str(gen) + ",archive,"
+    lineStr += str(archive[idx][0]) + ','
+    lineStr += str(archive[idx][1]) + ','    
+    lineStr += str(idx) + '\n'
+    f.write(lineStr)
+
+  # Write the child population
+  for idx in range(len(children)):
+    lineStr = str(trial) + ","
+    lineStr += str(gen) + ",children,"
+    lineStr += str(children[idx][0]) + ','
+    lineStr += str(children[idx][1]) + ','    
+    lineStr += str(idx) + '\n'
+    f.write(lineStr)
+
+  # Write the parent population
+  for idx in range(len(parents)):
+    lineStr = str(trial) + ","
+    lineStr += str(gen) + ",parents,"
+    lineStr += str(parents[idx][0]) + ','
+    lineStr += str(parents[idx][1]) + ','    
+    lineStr += str(idx) + '\n'
+    f.write(lineStr)
+    
+  f.close()
+  
   
 if __name__ == '__main__':
   configFileName = ""
@@ -131,7 +182,9 @@ if __name__ == '__main__':
                     "sigma":0.0,\
                     "reportFrequency":1,\
                     "boundMutation":True,\
-                    "usePlusStrategy":False}
+                    "usePlusStrategy":False,\
+                    "vizDirName":"NONE",\
+                    "measureChildren":False}
   configObj = configReader.buildArgObject(configFileName, 'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs
@@ -153,5 +206,7 @@ if __name__ == '__main__':
                     allzero=True,\
                     reportFreq=configObj.reportFrequency,\
                     boundMutation=configObj.boundMutation,\
-                    plusStrategy=configObj.usePlusStrategy)
+                    plusStrategy=configObj.usePlusStrategy,
+                    vizDirName=configObj.vizDirName,\
+                    msrChildren=configObj.measureChildren)
    

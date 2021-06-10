@@ -287,10 +287,14 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
 #################################################################
 
 
-def archiveReportHeader():
-  print("XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize")
+def archiveReportHeader(altPopText="NONE"):
+  if (altPopText == "NONE"):
+    print("XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize")
+  else:
+    print("XX: Trial \t Generation \t CoverEpsilon \t PackingEpsilon \t MinArchiveSparseness \t ArchiveSize \t " + altPopText.strip())
 
-def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
+    
+def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds, additionalPop=None):
   """
   Print output for the trial and various epsilon metrics
   """
@@ -303,11 +307,19 @@ def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds):
   if (len(archive) > 1):
     sparsenessVals, minAllOne, maxDistInArchive  = getPairwiseSparsenessMetrics(archive, k, n)
     minSparse = min(sparsenessVals)
-    
-  print("XX:", int(trial), '\t', int(gen), '\t',\
+
+  if (additionalPop == None):
+    print("XX:", int(trial), '\t', int(gen), '\t',\
         coverEps, '\t', packingEps, '\t', \
         minSparse, '\t', \
         len(archive))
+  else:
+    coverEpsAlt = estimateCoverEpsilon(additionalPop, sampleSize, n, sigma)
+    print("XX:", int(trial), '\t', int(gen), '\t',\
+        coverEps, '\t', packingEps, '\t', \
+        minSparse, '\t', \
+        len(archive), '\t',\
+        coverEpsAlt)
 
   # Flush standard out so we see the output in a timely fashion
   sys.stdout.flush()

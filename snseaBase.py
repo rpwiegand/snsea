@@ -260,7 +260,7 @@ def estimateCoverEpsilon(archive, sampleSize, n, sigma=0.0, bounds=(0,1)):
     sampleDistances.append( min(archiveDistances) )
 
   # Our epsilon estimate is the *maximum* of those closest points
-  epsilon = 0.0
+  epsilon = max(n, 10*sigma)
   if (len(sampleDistances) > 1):
     epsilon = max(sampleDistances)
     
@@ -296,7 +296,7 @@ def archiveReportHeader(altPopText="NONE"):
     
 def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds, additionalPop=None):
   """
-  Print output for the trial and various epsilon metrics
+  Print output for the trial and various epsilon metrics. 
   """
   maxPackingDistance = getDistance(np.array([0]*n), np.array([1]*n))
   packingEps = estimatePackingEpsilon(archive, sampleSize, maxPackingDistance)
@@ -323,6 +323,7 @@ def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds, addition
 
   # Flush standard out so we see the output in a timely fashion
   sys.stdout.flush()
+
 
 
 def clearVisualizationDir(vizDirName):

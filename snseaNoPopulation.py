@@ -89,7 +89,7 @@ def snseaConvergenceTester(n, rhoMin, k, trial, pm=0.0, sigma=0.0, minGeneration
     pm = 1.0/float(n)
 
   # Loop through generation counter
-  lastMinCoverGen = maxGenerations
+  lastMinCoverGen = 0
   minCover = sys.float_info.max
   gen = 0
   # Keep looping as long as all of the following are true:

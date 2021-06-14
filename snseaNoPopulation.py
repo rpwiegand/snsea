@@ -92,7 +92,18 @@ def snseaConvergenceTester(n, rhoMin, k, trial, pm=0.0, sigma=0.0, minGeneration
   lastMinCoverGen = maxGenerations
   minCover = sys.float_info.max
   gen = 0
-  while (gen < maxGenerations) and ((gen < minGenerations) or (gen < convergenceFactor*lastMinCoverGen)):
+  # Keep looping as long as all of the following are true:
+  #   1) We've not hit the max generations yet
+  #   2) We've not "converged"
+  #   3) It's still possible we might converge
+  # --> "Convergence" is defined as having not updated the lowest cover
+  #     in as many generations as it took to find it the first time.
+  #     but we require the algorithm to go at least min generations.
+  #     If we've passed the halfway mark to the max generations and
+  #     we are still updating the cover, then we're not going to make it.
+  while (gen < maxGenerations) and\
+        ((gen < minGenerations) or (gen < convergenceFactor*lastMinCoverGen)) and\
+        (lastMinCoverGen < maxGenerations/convergenceFactor):
     if boundMutation:
       y = sb.mutateIndividual(x, pm, sigma, (0,1), False)
     else:
@@ -130,7 +141,10 @@ def snseaConvergenceTester(n, rhoMin, k, trial, pm=0.0, sigma=0.0, minGeneration
     gen += 1
 
   # Report the last generation where the minimum cover was found
-  print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations)
+  convStr = "CONVERGED"
+  if (gen > maxGenerations/convergenceFactor):
+    convStr = "NOT CONVERGED"
+  print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\t', convStr)
 
   # Return the archive, which is the solution in this case
   return (archive)
@@ -159,6 +173,10 @@ if __name__ == '__main__':
                     "convergenceTest":False}
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
 
+  if (configObj.sigma <= 0.0) and (configObj.rhoMin >= configObj.n):
+    configObj.rhoMin = np.ceil(0.75*np.log2(configObj.n))
+    print("Setting rhoMin to", configObj.rhoMin)
+
   # Flush std I/O so that it prints early during long runs
   sys.stdout.flush()
 
@@ -168,7 +186,7 @@ if __name__ == '__main__':
   # Print headers
   sb.archiveReportHeader()
   if configObj.convergenceTest:
-    print("YY: Trial\tMinCover\tLastMinCoverGen\tMaxGen")
+    print("YY: Trial\tMinCover\tLastMinCoverGen\tMaxGen\tConvergeFlag")
 
   for trial in range(configObj.startTrialNum, configObj.startTrialNum+configObj.numTrials):
     if not configObj.convergenceTest:
@@ -184,7 +202,7 @@ if __name__ == '__main__':
                       reportFreq=configObj.reportFrequency,\
                       boundMutation=configObj.boundMutation,\
                       useEscapeSphere=configObj.useEscapeSphere)
-      if (isArchiveOutOfBounds(archive, (0,1))):
+      if (sb.isArchiveOutOfBounds(archive, (0,1))):
         print("Trial: ", trial, " archive contains points OUTOFBOUNDS")
 
     else:

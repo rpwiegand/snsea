@@ -142,7 +142,7 @@ def snseaConvergenceTester(n, rhoMin, k, trial, pm=0.0, sigma=0.0, minGeneration
 
   # Report the last generation where the minimum cover was found
   convStr = "CONVERGED"
-  if (gen > maxGenerations/convergenceFactor):
+  if (lastMinCoverGen > maxGenerations/convergenceFactor):
     convStr = "NOT CONVERGED"
   print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\t', convStr)
 

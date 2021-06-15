@@ -1,9 +1,5 @@
-1:hamming-conv-n6
-2:hamming-conv-n8
-3:hamming-conv-n10
-4:hamming-conv-n12a
-5:hamming-conv-n12b
-6:hamming-conv-n12c
-7:hamming-conv-n12d
-8:hamming-conv-n12e
-
+1:hamming-conv-n14a
+2:hamming-conv-n14b
+3:hamming-conv-n14c
+4:hamming-conv-n14d
+5:hamming-conv-n14e

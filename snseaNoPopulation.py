@@ -174,7 +174,7 @@ if __name__ == '__main__':
   configObj = configReader.buildArgObject(configFileName,'snsea',configDefaults,False)
 
   if (configObj.sigma <= 0.0) and (configObj.rhoMin >= configObj.n):
-    configObj.rhoMin = np.ceil(0.75*np.log2(configObj.n))
+    configObj.rhoMin = 0.75*np.log2(configObj.n)
     print("Setting rhoMin to", configObj.rhoMin)
 
   # Flush std I/O so that it prints early during long runs

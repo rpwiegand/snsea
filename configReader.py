@@ -126,6 +126,7 @@ def getKeyedIniParams(filename, sectionname, defaultDict):
   except:
     print("Warning: Could not read config file", filename)
     print()
+    raise
     return iniParams
 
   if not sectionname in sections:

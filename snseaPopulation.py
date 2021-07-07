@@ -53,15 +53,24 @@ def generateChildren(parents, llambda, pm, sigma, boundMutation):
   return children
 
 
-def selectNewParents(population, k, mu):
+def selectNewParents(population, k, mu, compareSet=None):
   """
   Return the mu best new parents.
   """
   sortablePopulation = []
 
+  # compareSet is the set of individuals
+  # over which will will compute sparseness
+  # for *fitness purposes only*.  By default,
+  # this is the population itself.  But we
+  # can choose a different baseline ... the archive,
+  # for example
+  if compareSet==None:
+    compareSet = population
+
   # Compute sparsness of every individual relative to the others
   for y in population:
-    py = sb.computeSparseness(y, population, k)
+    py = sb.computeSparseness(y, compareSet, k)
     sortablePopulation.append( (py, y) )
 
   # Sort these, then strip out the mu best individuals
@@ -72,7 +81,8 @@ def selectNewParents(population, k, mu):
 
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
-          reportFreq=100, boundMutation=True, plusStrategy=True, vizDirName="NONE", msrChildren=False):
+          reportFreq=100, boundMutation=True, plusStrategy=True, vizDirName="NONE", msrChildren=False,
+          fitnessByArchive=False, convergenceTest=False):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -93,6 +103,10 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
   # Estimate the upper limit for continuous spaces to get to in any dimension
   upperBound = sigma * maxGenerations
 
+  # These are only used if we're testing for convergence
+  lastMinCoverGen = 0
+  minCover = sys.float_info.max
+
   # Loop through generation counter
   for gen in range(maxGenerations):
     # Parents have some kids!
@@ -102,17 +116,44 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     updateArchive(children, archive, k, rhoMin)
 
     # Report results ever 100 generations
+    coverEst = None
     if ( (gen % reportFreq) == 0) and (boundMutation):
-      sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, None)
+      coverEst = sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, None)
     elif (msrChildren):
-      sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound), children)
+      coverEst = sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound), children)
     else:
-      sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))
+      coverEst = sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, (-upperBound, upperBound))
+
+    # If we're testing for convergence, see if we've seen the lowest cover so far
+    if convergenceTest and (coverEst == None):  # No need to estimate twice, if we've already reported
+      coverEst = sb.estimateCoverEpsilon(archive, 10000, n, sigma)
+    if coverEst < minCover: # Keep track of the min, including which gen
+      minCover = coverEst
+      lastMinCoverGen = gen
 
     if (not vizDirName == "NONE"):
        writeVisualizationFilePop(vizDirName, trial, gen, archive, children, parents)
 
-    parents = selectNewParents(children + parents, k, mu)
+    # Allow the user to specify whether selection is based on sparseness
+    # of population members compared to the population itself (default) or
+    # the archive
+    compareSet = None
+    if fitnessByArchive:
+      compareSet = archive
+
+    # Use plus or comma strategy.  Plus is the default.
+    selectSet = children + parents
+    if not plusStrategy:
+      selectSet= children
+
+    # Select individuals to go into the next generation
+    parents = selectNewParents(selectSet, k, mu, compareSet)
+
+  # If we're testing for convergence, then report that
+  if convergenceTest and (lastMinCoverGen < maxGenerations/2):
+    print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\tCONVERGED')
+  elif convergenceTest:
+    print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\tNOT CONVERGED')
 
   # Return the archive, which is the solution in this case
   return (archive)
@@ -184,7 +225,9 @@ if __name__ == '__main__':
                     "boundMutation":True,\
                     "usePlusStrategy":False,\
                     "vizDirName":"NONE",\
-                    "measureChildren":False}
+                    "measureChildren":False,\
+                    "fitnessByArchive":False,\
+                    "convergenceTest":False}                      
   configObj = configReader.buildArgObject(configFileName, 'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs
@@ -208,5 +251,7 @@ if __name__ == '__main__':
                     boundMutation=configObj.boundMutation,\
                     plusStrategy=configObj.usePlusStrategy,
                     vizDirName=configObj.vizDirName,\
-                    msrChildren=configObj.measureChildren)
+                    msrChildren=configObj.measureChildren,\
+                    fitnessByArchive=configObj.fitnessByArchive,\
+                    convergenceTest=configObj.convergenceTest)
    

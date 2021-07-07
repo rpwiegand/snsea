@@ -324,6 +324,7 @@ def archiveReport(archive, n, gen, trial, sampleSize, sigma, k, bounds, addition
   # Flush standard out so we see the output in a timely fashion
   sys.stdout.flush()
 
+  return coverEps
 
 
 def clearVisualizationDir(vizDirName):

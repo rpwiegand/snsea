@@ -131,7 +131,7 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
       minCover = coverEst
       lastMinCoverGen = gen
 
-    if (not vizDirName == "NONE"):
+    if (not vizDirName == "NONE") and (not vizDirName == "NOVIZ"):
        writeVisualizationFilePop(vizDirName, trial, gen, archive, children, parents)
 
     # Allow the user to specify whether selection is based on sparseness

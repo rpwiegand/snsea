@@ -81,7 +81,7 @@ def selectNewParents(population, k, mu, compareSet=None):
 
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
-          reportFreq=100, boundMutation=True, plusStrategy=True, vizDirName="NONE", msrChildren=False,
+          reportFreq=100, boundMutation=True, plusStrategy=False, vizDirName="NONE", msrChildren=False,
           fitnessByArchive=False, convergenceTest=False):
   """
   This is the main routine for the program.  It takes the mutation probability information,
@@ -141,10 +141,10 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     if fitnessByArchive:
       compareSet = archive
 
-    # Use plus or comma strategy.  Plus is the default.
-    selectSet = children + parents
-    if not plusStrategy:
-      selectSet= children
+    # Use plus or comma strategy.  Comma is the default.
+    selectSet = children
+    if plusStrategy:
+      selectSet= children + parents
 
     # Select individuals to go into the next generation
     parents = selectNewParents(selectSet, k, mu, compareSet)

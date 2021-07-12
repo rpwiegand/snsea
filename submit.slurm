@@ -2,10 +2,10 @@
 
 #SBATCH -N 1
 #SBATCH -n 5
-#SBATCH --time=1-00:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=rpwiegand@gmail.com
-#SBATCH --job-name=hammconv
+#SBATCH --job-name=rv500pop
 
 EXPNAME=`grep "^${SLURM_ARRAY_TASK_ID}:" exp-manifest.txt | cut -d":" -f2`
 STUDY=ECJ-PopPop

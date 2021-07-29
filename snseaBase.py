@@ -92,7 +92,7 @@ def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
         child = x + offsets
       else:
         for idx in range(len(x)):
-          child[idx] = stats.truncnorm.rvs(bound[0], bound[1], loc=x, scale=sigma)
+          child[idx] = stats.truncnorm.rvs(bound[0], bound[1], loc=x[idx], scale=sigma, size=1)[0]
 
       inside=True
       # Check if the mutation is inside the bounds

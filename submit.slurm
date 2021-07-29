@@ -15,6 +15,6 @@ env | grep "SLURM_ARRAY"
 echo "Running snsea against ${EXPNAME} ..."
 module load python/python-3.8.0-gcc-9.1.0
 #python3  snseaNoPopulation.py  ExperimentParams/${STUDY}/${EXPNAME}.ini > Results/${STUDY}/${EXPNAME}.raw
-python3  snseaPopulation.py  ExperimentParams/${STUDY}/${EXPNAME}.ini > Results/${STUDY}/${EXPNAME}.raw
+python3  snseaPopulation.py  ExperimentParams/${STUDY}/${EXPNAME}.ini >> Results/${STUDY}/${EXPNAME}.raw
 date
 

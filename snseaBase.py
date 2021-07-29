@@ -87,16 +87,21 @@ def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
       stuckCount += 1
 
       # Generate a mutation
-      offsets = np.random.normal(scale=sigma, size=n)
-      child = x + offsets
-
-      # Check if the mutation is inside the bounds
       if (bound==None):
-        inside=True
-      elif (useEscapeSphere) and (inSpecialArea(x, 0.25, .2)):
-        inside=True
+        offsets = np.random.normal(scale=sigma, size=n)
+        child = x + offsets
       else:
-        inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
+        for idx in range(len(x)):
+          child[idx] = stats.truncnorm(bound[0], bound[1], loc=x, scale=sigma)
+
+      inside=True
+      # Check if the mutation is inside the bounds
+      #if (bound==None):
+      #  inside=True
+      #elif (useEscapeSphere) and (inSpecialArea(x, 0.25, .2)):
+      #  inside=True
+      #else:
+      #  inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
 
   # Return the child
   return (child)

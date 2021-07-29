@@ -1,0 +1,150 @@
+Loaded some config params from config file ExperimentParams/hamming-conv-n10.ini from section snsea
+
+Configuration parameters:
+  convergenceTest:     True (from config file)
+  useEscapeSphere:     False (defaulted)
+  boundMutation:       True (from config file)
+  reportFrequency:     100 (from config file)
+  vizDirName:          NOVIZ (from config file)
+  archiveFilename:     NOARCHIVEWRITE (from config file)
+  sigma:               0.0 (from config file)
+  startTrialNum:       0 (defaulted)
+  numTrials:           50 (from config file)
+  maxGenerations:      5000 (from config file)
+  minGenerations:      50 (from config file)
+  pm:                  0.0 (from config file)
+  rhoMin:              10000.0 (from config file)
+  k:                   3 (from config file)
+  n:                   10 (from config file)
+
+Setting rhoMin to 2.4914460711655217
+
+Running SNS-EA ...
+XX: Trial 	 Generation 	 CoverEpsilon 	 PackingEpsilon 	 MinArchiveSparseness 	 ArchiveSize
+YY: Trial	MinCover	LastMinCoverGen	MaxGen	ConvergeFlag
+XX: 0 	 0 	 10 	 0.0 	 -1 	 1
+YY:  0 	 4 	 47 	 5000 	 CONVERGED
+XX: 1 	 0 	 10 	 0.0 	 -1 	 1
+YY:  1 	 5 	 29 	 5000 	 CONVERGED
+XX: 2 	 0 	 10 	 0.0 	 -1 	 1
+YY:  2 	 4 	 39 	 5000 	 CONVERGED
+XX: 3 	 0 	 10 	 0.0 	 -1 	 1
+XX: 3 	 100 	 4 	 4.5 	 1.6666666666666667 	 39
+YY:  3 	 4 	 61 	 5000 	 CONVERGED
+XX: 4 	 0 	 10 	 0.0 	 -1 	 1
+YY:  4 	 4 	 30 	 5000 	 CONVERGED
+XX: 5 	 0 	 10 	 0.0 	 -1 	 1
+YY:  5 	 5 	 38 	 5000 	 CONVERGED
+XX: 6 	 0 	 10 	 0.0 	 -1 	 1
+YY:  6 	 4 	 49 	 5000 	 CONVERGED
+XX: 7 	 0 	 10 	 0.0 	 -1 	 1
+XX: 7 	 100 	 5 	 4.5 	 1.6666666666666667 	 31
+XX: 7 	 200 	 3 	 5.0 	 1.6666666666666667 	 60
+XX: 7 	 300 	 3 	 5.0 	 1.6666666666666667 	 83
+YY:  7 	 3 	 155 	 5000 	 CONVERGED
+XX: 8 	 0 	 10 	 0.0 	 -1 	 1
+YY:  8 	 4 	 47 	 5000 	 CONVERGED
+XX: 9 	 0 	 10 	 0.0 	 -1 	 1
+XX: 9 	 100 	 4 	 5.0 	 1.6666666666666667 	 34
+YY:  9 	 4 	 64 	 5000 	 CONVERGED
+XX: 10 	 0 	 10 	 0.0 	 -1 	 1
+XX: 10 	 100 	 4 	 4.5 	 1.6666666666666667 	 35
+YY:  10 	 4 	 65 	 5000 	 CONVERGED
+XX: 11 	 0 	 10 	 0.0 	 -1 	 1
+XX: 11 	 100 	 4 	 5.0 	 1.6666666666666667 	 36
+YY:  11 	 4 	 58 	 5000 	 CONVERGED
+XX: 12 	 0 	 10 	 0.0 	 -1 	 1
+YY:  12 	 5 	 25 	 5000 	 CONVERGED
+XX: 13 	 0 	 10 	 0.0 	 -1 	 1
+YY:  13 	 5 	 31 	 5000 	 CONVERGED
+XX: 14 	 0 	 8 	 1.5 	 3.0 	 2
+XX: 14 	 100 	 4 	 4.5 	 1.6666666666666667 	 40
+YY:  14 	 4 	 56 	 5000 	 CONVERGED
+XX: 15 	 0 	 10 	 0.0 	 -1 	 1
+XX: 15 	 100 	 5 	 4.0 	 2.0 	 21
+XX: 15 	 200 	 3 	 5.0 	 2.0 	 57
+XX: 15 	 300 	 3 	 5.0 	 1.6666666666666667 	 88
+YY:  15 	 3 	 165 	 5000 	 CONVERGED
+XX: 16 	 0 	 10 	 0.0 	 -1 	 1
+YY:  16 	 10 	 0 	 5000 	 CONVERGED
+XX: 17 	 0 	 10 	 0.0 	 -1 	 1
+YY:  17 	 5 	 35 	 5000 	 CONVERGED
+XX: 18 	 0 	 10 	 0.0 	 -1 	 1
+YY:  18 	 5 	 25 	 5000 	 CONVERGED
+XX: 19 	 0 	 10 	 0.0 	 -1 	 1
+XX: 19 	 100 	 4 	 5.0 	 1.6666666666666667 	 37
+XX: 19 	 200 	 3 	 5.0 	 1.6666666666666667 	 65
+YY:  19 	 3 	 101 	 5000 	 CONVERGED
+XX: 20 	 0 	 10 	 0.0 	 -1 	 1
+YY:  20 	 4 	 42 	 5000 	 CONVERGED
+XX: 21 	 0 	 10 	 0.0 	 -1 	 1
+YY:  21 	 5 	 30 	 5000 	 CONVERGED
+XX: 22 	 0 	 10 	 0.0 	 -1 	 1
+YY:  22 	 5 	 37 	 5000 	 CONVERGED
+XX: 23 	 0 	 10 	 0.0 	 -1 	 1
+YY:  23 	 5 	 33 	 5000 	 CONVERGED
+XX: 24 	 0 	 10 	 0.0 	 -1 	 1
+XX: 24 	 100 	 4 	 4.5 	 1.6666666666666667 	 37
+YY:  24 	 4 	 57 	 5000 	 CONVERGED
+XX: 25 	 0 	 10 	 0.0 	 -1 	 1
+XX: 25 	 100 	 4 	 4.5 	 1.6666666666666667 	 40
+XX: 25 	 200 	 3 	 5.0 	 1.6666666666666667 	 64
+YY:  25 	 3 	 106 	 5000 	 CONVERGED
+XX: 26 	 0 	 10 	 0.0 	 -1 	 1
+XX: 26 	 100 	 4 	 4.5 	 1.6666666666666667 	 32
+YY:  26 	 4 	 80 	 5000 	 CONVERGED
+XX: 27 	 0 	 10 	 0.0 	 -1 	 1
+YY:  27 	 5 	 25 	 5000 	 CONVERGED
+XX: 28 	 0 	 10 	 0.0 	 -1 	 1
+YY:  28 	 5 	 31 	 5000 	 CONVERGED
+XX: 29 	 0 	 10 	 0.0 	 -1 	 1
+YY:  29 	 4 	 27 	 5000 	 CONVERGED
+XX: 30 	 0 	 10 	 0.0 	 -1 	 1
+YY:  30 	 4 	 31 	 5000 	 CONVERGED
+XX: 31 	 0 	 8 	 1.5 	 3.0 	 2
+YY:  31 	 4 	 41 	 5000 	 CONVERGED
+XX: 32 	 0 	 8 	 1.5 	 3.0 	 2
+YY:  32 	 4 	 42 	 5000 	 CONVERGED
+XX: 33 	 0 	 10 	 0.0 	 -1 	 1
+YY:  33 	 6 	 20 	 5000 	 CONVERGED
+XX: 34 	 0 	 10 	 0.0 	 -1 	 1
+YY:  34 	 5 	 20 	 5000 	 CONVERGED
+XX: 35 	 0 	 10 	 0.0 	 -1 	 1
+XX: 35 	 100 	 4 	 4.5 	 1.6666666666666667 	 45
+YY:  35 	 4 	 64 	 5000 	 CONVERGED
+XX: 36 	 0 	 10 	 0.0 	 -1 	 1
+YY:  36 	 5 	 33 	 5000 	 CONVERGED
+XX: 37 	 0 	 10 	 0.0 	 -1 	 1
+XX: 37 	 100 	 4 	 4.5 	 1.6666666666666667 	 32
+XX: 37 	 200 	 3 	 4.5 	 1.6666666666666667 	 63
+YY:  37 	 3 	 131 	 5000 	 CONVERGED
+XX: 38 	 0 	 10 	 0.0 	 -1 	 1
+YY:  38 	 5 	 45 	 5000 	 CONVERGED
+XX: 39 	 0 	 10 	 0.0 	 -1 	 1
+YY:  39 	 5 	 25 	 5000 	 CONVERGED
+XX: 40 	 0 	 8 	 1.5 	 3.0 	 2
+XX: 40 	 100 	 5 	 4.0 	 1.6666666666666667 	 35
+YY:  40 	 4 	 72 	 5000 	 CONVERGED
+XX: 41 	 0 	 10 	 0.0 	 -1 	 1
+XX: 41 	 100 	 4 	 5.0 	 1.6666666666666667 	 45
+YY:  41 	 4 	 52 	 5000 	 CONVERGED
+XX: 42 	 0 	 10 	 0.0 	 -1 	 1
+YY:  42 	 5 	 28 	 5000 	 CONVERGED
+XX: 43 	 0 	 10 	 0.0 	 -1 	 1
+XX: 43 	 100 	 4 	 4.5 	 1.6666666666666667 	 35
+YY:  43 	 4 	 58 	 5000 	 CONVERGED
+XX: 44 	 0 	 10 	 0.0 	 -1 	 1
+XX: 44 	 100 	 4 	 4.5 	 1.6666666666666667 	 33
+XX: 44 	 200 	 3 	 5.0 	 1.6666666666666667 	 65
+YY:  44 	 3 	 143 	 5000 	 CONVERGED
+XX: 45 	 0 	 10 	 0.0 	 -1 	 1
+YY:  45 	 5 	 33 	 5000 	 CONVERGED
+XX: 46 	 0 	 10 	 0.0 	 -1 	 1
+YY:  46 	 5 	 15 	 5000 	 CONVERGED
+XX: 47 	 0 	 8 	 1.5 	 3.0 	 2
+YY:  47 	 5 	 27 	 5000 	 CONVERGED
+XX: 48 	 0 	 10 	 0.0 	 -1 	 1
+YY:  48 	 4 	 32 	 5000 	 CONVERGED
+XX: 49 	 0 	 10 	 0.0 	 -1 	 1
+XX: 49 	 100 	 4 	 4.5 	 1.6666666666666667 	 36
+YY:  49 	 4 	 52 	 5000 	 CONVERGED

@@ -1,0 +1,44 @@
+Loaded some config params from config file ExperimentParams/hamming-conv-n12e.ini from section snsea
+
+Configuration parameters:
+  convergenceTest:     True (from config file)
+  useEscapeSphere:     False (defaulted)
+  boundMutation:       True (from config file)
+  reportFrequency:     100 (from config file)
+  vizDirName:          NOVIZ (from config file)
+  archiveFilename:     NOARCHIVEWRITE (from config file)
+  sigma:               0.0 (from config file)
+  startTrialNum:       40 (from config file)
+  numTrials:           10 (from config file)
+  maxGenerations:      5000 (from config file)
+  minGenerations:      10 (from config file)
+  pm:                  0.0 (from config file)
+  rhoMin:              10000.0 (from config file)
+  k:                   3 (from config file)
+  n:                   12 (from config file)
+
+Setting rhoMin to 2.688721875540867
+
+Running SNS-EA ...
+XX: Trial 	 Generation 	 CoverEpsilon 	 PackingEpsilon 	 MinArchiveSparseness 	 ArchiveSize
+YY: Trial	MinCover	LastMinCoverGen	MaxGen	ConvergeFlag
+XX: 40 	 0 	 12 	 0.0 	 -1 	 1
+YY:  40 	 12 	 0 	 5000 	 CONVERGED
+XX: 41 	 0 	 12 	 0.0 	 -1 	 1
+YY:  41 	 10 	 8 	 5000 	 CONVERGED
+XX: 42 	 0 	 12 	 0.0 	 -1 	 1
+YY:  42 	 8 	 11 	 5000 	 CONVERGED
+XX: 43 	 0 	 12 	 0.0 	 -1 	 1
+YY:  43 	 6 	 39 	 5000 	 CONVERGED
+XX: 44 	 0 	 12 	 0.0 	 -1 	 1
+YY:  44 	 10 	 9 	 5000 	 CONVERGED
+XX: 45 	 0 	 12 	 0.0 	 -1 	 1
+YY:  45 	 12 	 0 	 5000 	 CONVERGED
+XX: 46 	 0 	 12 	 0.0 	 -1 	 1
+YY:  46 	 9 	 9 	 5000 	 CONVERGED
+XX: 47 	 0 	 12 	 0.0 	 -1 	 1
+YY:  47 	 12 	 0 	 5000 	 CONVERGED
+XX: 48 	 0 	 12 	 0.0 	 -1 	 1
+YY:  48 	 10 	 8 	 5000 	 CONVERGED
+XX: 49 	 0 	 12 	 0.0 	 -1 	 1
+YY:  49 	 12 	 0 	 5000 	 CONVERGED

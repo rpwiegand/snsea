@@ -149,6 +149,11 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     # Select individuals to go into the next generation
     parents = selectNewParents(selectSet, k, mu, compareSet)
 
+    # Ugly bail out to shorten runs that have converged
+    if convergenceTest and (gen > 50) and (lastMinCoverGen < gen/2):
+      break
+
+
   # If we're testing for convergence, then report that
   if convergenceTest and (lastMinCoverGen < maxGenerations/2):
     print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\tCONVERGED')

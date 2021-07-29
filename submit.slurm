@@ -2,7 +2,7 @@
 
 #SBATCH -N 1
 #SBATCH -n 5
-#SBATCH --time=3-00:00:00
+#SBATCH --time=10-00:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=rpwiegand@gmail.com
 #SBATCH --job-name=rv500pop

@@ -32,17 +32,28 @@ def updateArchive(population, archive, k, rhoMin):
         archive.append( y )
   
 
-def generateChildren(parents, llambda, pm, sigma, boundMutation):
+def generateChildren(parents, llambda, pm, sigma, boundMutation, archive, archiveSelectProb):
   children = []
   mu = len(parents)
+  parentCount = 0
 
-  for idx in range(llambda):
-    # Keeping looping through the parent population to produce new children
-    # until we've filled the child population
-    parentIdx = idx % mu
+  for idx in range(llambda):    
+    x = None
 
-    # Get a parent and produce a child via mutation
-    x = parents[parentIdx]
+    if (np.random.uniform() < archiveSelectProb):
+      # If we're pulling from the archive, then grab a random parent from there
+      archiveIdx = np.random.randint(0, len(archive))
+      x = archive[archiveIdx]
+      #print(".", archiveIdx, x)
+    
+    else:
+      # Keeping looping through the parent population to produce new children
+      # until we've filled the child population
+      parentIdx = parentCount % mu
+      x = parents[parentIdx]
+      parentCount += 1
+      #print("o", parentIdx, x, parents)
+
     if boundMutation:
       y = sb.mutateIndividual(x, pm, sigma, (0,1), False)
       children.append( y )
@@ -50,6 +61,7 @@ def generateChildren(parents, llambda, pm, sigma, boundMutation):
       y = sb.mutateIndividual(x, pm, sigma, None, False)
       children.append( y )
 
+    #print("DBGGG:  x=", x, "     y=", y)
   return children
 
 
@@ -82,7 +94,7 @@ def selectNewParents(population, k, mu, compareSet=None):
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
           reportFreq=100, boundMutation=True, plusStrategy=False, vizDirName="NONE", msrChildren=False,
-          fitnessByArchive=False, convergenceTest=False):
+          fitnessByArchive=False, convergenceTest=False, archiveSelectProb=0.0):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -110,7 +122,7 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
   # Loop through generation counter
   for gen in range(maxGenerations):
     # Parents have some kids!
-    children = generateChildren(parents, llambda, pm, sigma, boundMutation)
+    children = generateChildren(parents, llambda, pm, sigma, boundMutation, archive, archiveSelectProb)
 
     # Update the archive with any children who meet the criteria
     updateArchive(children, archive, k, rhoMin)
@@ -232,7 +244,8 @@ if __name__ == '__main__':
                     "vizDirName":"NONE",\
                     "measureChildren":False,\
                     "fitnessByArchive":False,\
-                    "convergenceTest":False}                      
+                    "convergenceTest":False,\
+                    "archiveSelectProb":0.0}                      
   configObj = configReader.buildArgObject(configFileName, 'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs
@@ -258,5 +271,6 @@ if __name__ == '__main__':
                     vizDirName=configObj.vizDirName,\
                     msrChildren=configObj.measureChildren,\
                     fitnessByArchive=configObj.fitnessByArchive,\
-                    convergenceTest=configObj.convergenceTest)
+                    convergenceTest=configObj.convergenceTest,
+                    archiveSelectProb=configObj.archiveSelectProb)
    

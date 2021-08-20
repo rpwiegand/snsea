@@ -23,6 +23,7 @@ def initializeIndividual(n, allzero=False, sigma=0.0, bounds=(0,1)):
   # If not allzero and we're numeric, init in [lp,ub]^n
   elif (not allzero and sigma > 0.0):
     x = np.random.uniform(low=bounds[0], high=bounds[1], size=n)
+    #print("DBG: init x=", x)
 
   # Return the initialized vector
   return (x)
@@ -63,7 +64,7 @@ def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
   """
   # Get the length and initialize a child vector
   n = len(x)
-  child = np.array([0]*n)
+  child = np.array([float(0.0)]*n)
 
   # If we're using a binary representation, then flip bits
   # at random according to pm, i.i.d.
@@ -87,21 +88,23 @@ def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
       stuckCount += 1
 
       # Generate a mutation
-      if (bound==None):
+      if (True): #bound==None):
         offsets = np.random.normal(scale=sigma, size=n)
         child = x + offsets
-      else:
-        for idx in range(len(x)):
-          child[idx] = stats.truncnorm.rvs(bound[0], bound[1], loc=x[idx], scale=sigma, size=1)[0]
-
-      inside=True
+      #else:
+      #  for idx in range(len(x)):
+      #    newGene = stats.truncnorm.rvs(bound[0], bound[1], loc=x[idx], scale=sigma, size=1)
+      #    child[idx] = float(newGene[0])
+      #    #print("DBGXX[", idx, "] ", bound, sigma, "|| ", newGene, "::", child[idx], "  ||", x)
+      
+      #inside=True
       # Check if the mutation is inside the bounds
-      #if (bound==None):
-      #  inside=True
+      if (bound==None):
+        inside=True
       #elif (useEscapeSphere) and (inSpecialArea(x, 0.25, .2)):
       #  inside=True
-      #else:
-      #  inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
+      else:
+        inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
 
   # Return the child
   return (child)

@@ -51,7 +51,17 @@ def inSpecialArea(parent, criteria, variance):
      (parent[1] < 0) or (parent[2] < 0) or (parent[0] < 0):
     special=True
   return (special)
-    
+   
+
+def taurusWrap(x, low, high):
+  y = x.copy()
+  for idx in range(len(y)):
+    if y[idx] < low:
+      y[idx] = high - y[idx]
+    if y[idx] > high:
+      y[idx] = low + (y[idx] - high)
+  return y
+ 
   
 def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
   """
@@ -87,17 +97,21 @@ def mutateIndividual(x, pm, sigma=0.0, bound=[0,1], useEscapeSphere=False):
         inside=True
       stuckCount += 1
 
+      inside=True
+
       # Generate a mutation
       if (True): #bound==None):
         offsets = np.random.normal(scale=sigma, size=n)
         child = x + offsets
-      #else:
-      #  for idx in range(len(x)):
-      #    newGene = stats.truncnorm.rvs(bound[0], bound[1], loc=x[idx], scale=sigma, size=1)
-      #    child[idx] = float(newGene[0])
-      #    #print("DBGXX[", idx, "] ", bound, sigma, "|| ", newGene, "::", child[idx], "  ||", x)
-      
+      else:
+        #for idx in range(len(x)):
+        #  print("DBG: ", idx, bound[0], bound[1], x[idx], sigma)
+        #  child[idx] = stats.truncnorm.rvs(bound[0], bound[1], loc=x[idx], scale=sigma, size=1)[0]
+        child = taurusWrap(x+np.random.normal(scale=sigma, size=n), bound[0], bound[1])        
+        inside = isInsideEuclideanBoundary(child, bound[0], bound[1])
+
       #inside=True
+      
       # Check if the mutation is inside the bounds
       if (bound==None):
         inside=True

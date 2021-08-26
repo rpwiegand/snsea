@@ -162,7 +162,7 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     parents = selectNewParents(selectSet, k, mu, compareSet)
 
     # Ugly bail out to shorten runs that have converged
-    if convergenceTest and (gen > 50) and (lastMinCoverGen < gen/2):
+    if convergenceTest and (gen > 100) and (lastMinCoverGen < gen/2):
       break
 
 

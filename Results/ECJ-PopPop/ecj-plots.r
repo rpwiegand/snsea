@@ -27,6 +27,11 @@ getUpperCI <- function(vct) {
 }
 
 
+findKeyPoint <- function(results) {
+  idx <- which(results$CoverEpsilon < results$PackingEpsilon)[1]
+  return( c(results$Generation[idx],results$CoverEpsilon[idx]) )
+}
+
 # =============================================================================
 #  Data Access Functions
 # =============================================================================
@@ -36,7 +41,7 @@ getUpperCI <- function(vct) {
 # Pull all the files for convergence results on the Euclidean space together
 getRVResults <- function(sVals = c('01','02', '03'), 
                          rVals=c('02','04','06'), 
-                         basename="unboundedrv-500",
+                         basename="boundedrv-500",
                          popSuffix="-mu2lam8",
                          suffix=".XX") {
   df <- NULL 
@@ -52,6 +57,39 @@ getRVResults <- function(sVals = c('01','02', '03'),
       
       if (is.null(df)) df <- tmpdf
       else df <- rbind(df, tmpdf)
+    }
+  }
+  
+  return(df)
+}
+
+
+
+# -----------------------------------------------------------------------------
+# Pull all the files for convergence results on the Euclidean space together
+# for different sized populations.
+getConvResults <- function(sVal = '01', 
+                           rVal = '02', 
+                           popSizes=c(2,4,8,16,32),
+                           basename="boundedrv-conv",
+                           suffix=".YY") {
+  df <- NULL 
+  for (m in popSizes) {
+    for (l in popSizes) {
+      if (l > m) {
+        filename <- paste(basename, '-s', sVal, '-r', rVal, '-mu', m, 'lam', l, suffix, sep='')
+        cat(paste("Reading file", filename, '\n'))
+        tmpdf <- read.table(filename, 
+                            col.names=c("Trial", "Cover", "GenConv", "MaxGens", "ConvergeInd"),
+                            flush=T)
+      
+        numRows <- dim(tmpdf)[1]
+        tmpdf$mu <- rep(as.numeric(m), numRows)
+        tmpdf$llam <- rep(as.numeric(l), numRows)
+      
+        if (is.null(df)) df <- tmpdf
+        else df <- rbind(df, tmpdf)
+      }
     }
   }
   
@@ -76,7 +114,7 @@ plotBoundedConvHeatMap <- function(df) {
           xlab(TeX("$\\sigma$")) +
           ylab(TeX("$\\rho_{min}$")) +
           scale_fill_continuous(name="Trials (out of 50)\nthat Converged") +
-          ggtitle("Unbounded Euclidean (5D)") +
+          ggtitle("Bounded Euclidean (5D)") +
           theme_bw() +
           theme(text=element_text(family="Times", size=14),
                 axis.line = element_blank(),
@@ -93,7 +131,7 @@ plotBoundedConvHeatMap <- function(df) {
 # -----------------------------------------------------------------------------
 #  Produce a grouped bar plot of the real value parameterizations showing
 #  the percentagle of trials converged.
-plotRVConvBarPlot <- function(df, titlePrefix="Unbounded") {
+plotRVConvBarPlot <- function(df, titlePrefix="Bounded") {
   aggDF <- summarise(group_by(df, sigma, rho), ConvergeCount=table(ConvergeFlag)[1])
   
   p <- ggplot(aggDF, aes(x=rho, y=100*ConvergeCount/50, fill=factor(sigma))) + #, color="white")) +
@@ -124,7 +162,7 @@ plotRVConvBarPlot <- function(df, titlePrefix="Unbounded") {
 # -----------------------------------------------------------------------------
 #  Produce a plot of the Euclidean space convergence curves in terms of Cover
 #  as a small multiple of line plots over the different sigma and rho values.
-plotSmallMult500rv <- function(df, titlePrefix="Unbounded", ylim=c(0.5,1.25)) {
+plotSmallMult500rv <- function(df, titlePrefix="Bounded", ylim=c(0.5,1.25)) {
   # New facet label names for sigma variable
   sigma.labs <- paste("sigma", c(0.1, 0.2, 0.3), sep='=')
   names(sigma.labs) <- c(0.1,0.2,0.3)
@@ -167,7 +205,7 @@ plotSmallMult500rv <- function(df, titlePrefix="Unbounded", ylim=c(0.5,1.25)) {
 # -----------------------------------------------------------------------------
 #  Produce a plot of the Euclidean space convergence curves in terms of Cover,
 #  Packing, and MinSparsness for a particular sigma and rhomin.
-plotRV500CoverPacking <- function(df, titlePrefix="Unbounded", inSigma=0.1, inRhoMin=0.2, packingAnnotation=T) {
+plotRV500CoverPacking <- function(df, titlePrefix="Bounded", inSigma=0.1, inRhoMin=0.2, packingAnnotation=T) {
   results = filter(df, sigma==inSigma, rho==inRhoMin)
   maxMinSpar <- max(results$MinArchiveSparseness)
 
@@ -239,57 +277,102 @@ polynomialGenerator <- function(coefficients, tVals=seq(from=-pi,to=pi,length=20
 }
 
 
+plotDotWhiskerConvergenceRates <- function(df) {
+  df2 <- summarise(group_by(df, mu, llam), 
+                   AverageGensToConvergence=mean(GenConv),
+                   MedianGensToConvergence=median(GenConv),
+                   LowerCI=getLowerCI(GenConv),
+                   UpperCI=getUpperCI(GenConv))
+  #df2 <- mutate(df2,
+  #              MuLab=paste("mu=", as.character(mu), sep=''))
+  
+  p <- ggplot(df2, aes(y=AverageGensToConvergence, x=factor(llam))) +
+         geom_linerange(aes(ymin=LowerCI, ymax=UpperCI), size=2, color="firebrick") + 
+         geom_point(aes(y=MedianGensToConvergence), size=4, shape=17) +
+         geom_point(size=5, shape=21, color="firebrick", fill="firebrick") +
+         #scale_x_discrete(breaks=c(2,4,8,16,32),
+         #                  labels=c("2", "4", "8", "16", "32"),
+        #                limits=c(0,34)) + 
+         facet_grid(. ~ mu) +
+         xlab(TeX("$\\lambda$")) +
+         ylab("Generations to Convergences") +
+         ggtitle("Convergence Results for Different Population Sizes",
+                 subtitle=TeX("$\\mu$")) +
+         theme_bw() +
+         theme(text=element_text(family="Times", size=12),
+               axis.line = element_blank(),
+               panel.grid.major = element_blank(),
+               panel.grid.minor = element_blank(),
+               #panel.border = element_blank(),
+               panel.background = element_blank())   
+         
+ print(p)
+ 
+ return(p)
+}
+
+
+visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr="Selecting from Population (by Gen)") {
+  filename=paste('viz-archive-and-pop-s01-r0001-mu16lam32',suffix,'.csv',sep='')
+  vizRaw <- read.csv(filename, header=T)
+  vizFiltered <- mutate(filter(vizRaw, trial==tr, generation %in% gens),
+                        isarchive=(whichPop!="archive"))
+  
+  p<- ggplot(vizFiltered, aes(x=x, y=y, color=whichPop, size=isarchive)) + 
+    geom_point() +
+    scale_color_manual(values=c("darkgray","firebrick", "darkgray"),
+                       name="") +
+    facet_wrap(. ~ generation, scales="fixed", ncol=ncol) +
+    #facet_grid(generation ~ ., scales="fixed") +
+    #facet_wrap(generation ~ .) + 
+    scale_size_discrete(name="Population", range=c(1.25,2.5)) +
+    ylab("") + xlab("") + # xlab("Generation") +
+    xlim(c(0,1)) + ylim(c(0,1)) +
+    ggtitle(titleStr) +
+    theme_bw() +
+    theme(text=element_text(family="Times", size=18),
+          axis.text=element_blank(),
+          axis.ticks=element_blank(),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.position="none") +
+    guides(size=FALSE)
+  
+  print(p)
+}
+
+
 # =============================================================================
 #  Output / Saving Functions
 # =============================================================================
 
-produceAllPlots <- function(whichPlots=1:9) {
+produceAllPlots <- function(whichPlots=1:5) {
+  df500 <- getRVResults()
+  dfconv <- getConvResults()
+  
   if (1 %in% whichPlots) {
-    p1 <- plotRVConvBarPlotNOPOP(getRVResults(basename="boundedrv-conv"), "Bounded")
-    ggsave("bounded-conv-NOPOP.pdf", width=13, height=10, units="cm")
+    p1 <- plotSmallMult500rv(df500)
+    ggsave("bounded-500-sm-mu2lam8.pdf", width=13, height=10, units="cm")
   }
   
   if (2 %in% whichPlots) {
-    p2 <- plotRVConvBarPlotNOPOP(getRVResults(basename="unboundedrv-conv"), "Unbounded")
-    ggsave("unbounded-conv-NOPOP.pdf", width=13, height=10, units="cm")
+    p2 <- plotRV500CoverPacking(df500)
+    ggsave("bounded-500-s01r02-mu2lam8.pdf", width=13, height=10, units="cm")
   }
   
   if (3 %in% whichPlots) {
-    p3 <- plotRV500CoverPacking(getRVResults(basename="boundedrv-500", suffix=".XX"), 
-                                titlePrefix="Bounded", inSigma=0.1, inRhoMin=0.2, packingAnnotation=F)
-    ggsave("bounded-s01-r02-NOPOP.pdf", width=13, height=7, units="cm")
+    p3 <- plotDotWhiskerConvergenceRates(dfconv)
+    ggsave("bounded-conv-s02-r02.pdf", width=13, height=10, units="cm")
   }
   
   if (4 %in% whichPlots) {
-    p4 <- plotRV500CoverPacking(getRVResults(basename="unboundedrv-500", suffix=".XX"), 
-                                titlePrefix="Unbounded", inSigma=0.1, inRhoMin=0.2, packingAnnotation=F)
-    ggsave("unbounded-s01-r02-NOPOP.pdf", width=13, height=7, units="cm")
+    p4 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-popsel', 4)
+    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-popsel.pdf", width=13, height=10, units="cm")
   }
-  
+
   if (5 %in% whichPlots) {
-    p5 <- plotRV500CoverPacking(getRVResults(basename="unboundedrv-500", suffix=".XX"), 
-                                titlePrefix="Unbounded", inSigma=0.2, inRhoMin=0.6, packingAnnotation=T)
-    ggsave("unbounded-s02-r06-NOPOP.pdf", width=13, height=7, units="cm")
-  }
-  
-  if (6 %in% whichPlots) {
-    p6 <- plotSmallMult500rvNOPOP(getRVResults(basename="boundedrv-500", suffix=".XX"), "Bounded")
-    ggsave("bounded-500sm-NOPOP.pdf", width=13, height=13, units="cm")
-  }
-  
-  if (7 %in% whichPlots) {
-    p7 <- plotSmallMult500rvNOPOP(getRVResults(basename="unboundedrv-500", suffix=".XX"), "Unbounded")
-    ggsave("unbounded-500sm-NOPOP.pdf", width=13, height=13, units="cm")
-  }
-  
-  if (8 %in% whichPlots) {
-    p8 <- plotSmallMult500HammingNOPOP(getHammingResults(basename="hamming-500", suffix=".XX"))
-    ggsave("hamming-500sm-NOPOP.pdf", width=13, height=5, units="cm")
-  }
-  
-  if (9 %in% whichPlots) {
-    plotHamming500CoverPacking(getHammingResults(basename="hamming-500", suffix=".XX"))
-    ggsave("hamming-500-n10-NOPOP.pdf", width=13, height=7, units="cm")
+    p5 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-archsel', 4, "Selecting from Archive (by Gen)")
+    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-archsell.pdf", width=13, height=10, units="cm")
   }
   
 }

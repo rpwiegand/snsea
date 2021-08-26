@@ -13,5 +13,5 @@ if [ ! -f $INFILE ] ; then
 fi
 
 echo "Reading $INFILE, writing ${1}.XX and ${1}.YY"
-grep XX $INFILE | cut -d':' -f2 > ${1}.XX
-#grep YY $INFILE | cut -d':' -f2 > ${1}.YY
+#grep XX $INFILE | cut -d':' -f2 > ${1}.XX
+grep YY $INFILE | cut -d':' -f2 > ${1}.YY

@@ -205,8 +205,12 @@ plotSmallMult500rv <- function(df, titlePrefix="Bounded", ylim=c(0.5,1.25)) {
 # -----------------------------------------------------------------------------
 #  Produce a plot of the Euclidean space convergence curves in terms of Cover,
 #  Packing, and MinSparsness for a particular sigma and rhomin.
-plotRV500CoverPacking <- function(df, titlePrefix="Bounded", inSigma=0.1, inRhoMin=0.2, packingAnnotation=T) {
-  results = filter(df, sigma==inSigma, rho==inRhoMin)
+plotRV500CoverPacking <- function(df, titlePrefix="Bounded (Archive Selection)", inSigma=0.1, inRhoMin=0.2, 
+                                  packingAnnotation=T, doFilter=T) {
+  if (doFilter)
+    results = filter(df, sigma==inSigma, rho==inRhoMin)
+  else
+    results = df
   maxMinSpar <- max(results$MinArchiveSparseness)
 
   aggregatedResults <- summarise(group_by(results, Generation), 
@@ -373,6 +377,12 @@ produceAllPlots <- function(whichPlots=1:5) {
   if (5 %in% whichPlots) {
     p5 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-archsel', 4, "Selecting from Archive (by Gen)")
     ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-archsell.pdf", width=13, height=10, units="cm")
+  }
+
+  if (6 %in% whichPlots) {
+    df <- read.table('boundedrv-500-vizexamp-mu2lam8-full.XX', header=T)
+    p6 <- plotRV500CoverPacking(df, doFilter=F)
+    ggsave("boundedrv-500-vizexamp-mu2lam8-full.pdf", width=13, height=10, units="cm")
   }
   
 }

@@ -4,6 +4,10 @@ library(reshape2)
 library(RColorBrewer)
 library(latex2exp)
 
+darkCBPallet <- c(rgb(0.2873239, 0.7098592, 0.3971831),
+                  rgb(0.5464789, 0.3971831, 0.4507042),
+                  rgb(221/255, 170/255, 51/255))
+
 # =============================================================================
 #  Convenience Utility Functions
 # =============================================================================
@@ -143,7 +147,8 @@ plotRVConvBarPlot <- function(df, titlePrefix="Bounded") {
     ylab("Percente of Trials Converged") +
     #scale_fill_continuous(name="Trials (out of 50)\nthat Converged") +
     #scale_fill_brewer(palette="Set1", name=TeX("$\\rho_{min}$")) +
-    scale_fill_brewer(palette="Set2", name=TeX("$\\sigma$")) +
+    #scale_fill_brewer(palette="Set2", name=TeX("$\\sigma$")) +
+    scale_fill_manual(values=darkCBPallet, name=TeX("$\\sigma$")) +
     ggtitle(paste(titlePrefix,"Euclidean (5D) Convergence ")) +
     theme_bw() +
     theme(text=element_text(family="Times", size=12),
@@ -241,8 +246,13 @@ plotRV500CoverPacking <- function(df, titlePrefix="Bounded (Archive Selection)",
     ylim(c(minY, maxY)) +
     annotate("text", label=TeX(rhoMinLabel), size=3,
              x=500, y=inRhoMin+0.05, hjust=1, vjust=0) +
-    scale_color_brewer(name="Archive\nMeasure",
-                       palette="Set2",
+    #scale_color_brewer(name="Archive\nMeasure",
+    #                   palette="Set1",
+    #                   labels=c("Cover\nEpsilon\n",
+    #                            "Packing\nEpsilon\n", 
+    #                            "Minimum\nSparseness")) +
+    scale_color_manual(name="Archive\nMeasure",
+                       values=darkCBPallet,
                        labels=c("Cover\nEpsilon\n",
                                 "Packing\nEpsilon\n", 
                                 "Minimum\nSparseness")) +
@@ -323,7 +333,7 @@ visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr=
                         isarchive=(whichPop!="archive"))
   
   p<- ggplot(vizFiltered, aes(x=x, y=y, color=whichPop, size=isarchive)) + 
-    geom_point() +
+    geom_point(size=2) +
     scale_color_manual(values=c("darkgray","firebrick", "darkgray"),
                        name="") +
     facet_wrap(. ~ generation, scales="fixed", ncol=ncol) +
@@ -334,7 +344,7 @@ visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr=
     xlim(c(0,1)) + ylim(c(0,1)) +
     ggtitle(titleStr) +
     theme_bw() +
-    theme(text=element_text(family="Times", size=18),
+    theme(text=element_text(family="Times", size=12),
           axis.text=element_blank(),
           axis.ticks=element_blank(),
           panel.grid.major = element_blank(), 
@@ -350,7 +360,7 @@ visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr=
 #  Output / Saving Functions
 # =============================================================================
 
-produceAllPlots <- function(whichPlots=1:5) {
+produceAllPlots <- function(whichPlots=1:6) {
   df500 <- getRVResults()
   dfconv <- getConvResults()
   

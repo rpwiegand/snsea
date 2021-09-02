@@ -4,6 +4,10 @@ library(reshape2)
 library(RColorBrewer)
 library(latex2exp)
 
+darkCBPallet <- c(rgb(0.2873239, 0.7098592, 0.3971831),
+                  rgb(0.5464789, 0.3971831, 0.4507042),
+                  rgb(221/255, 170/255, 51/255))
+
 # =============================================================================
 #  Convenience Utility Functions
 # =============================================================================
@@ -125,7 +129,8 @@ plotRVConvBarPlotNOPOP <- function(df, titlePrefix="Bounded") {
     ylab("Percente of Trials Converged") +
     #scale_fill_continuous(name="Trials (out of 50)\nthat Converged") +
     #scale_fill_brewer(palette="Set1", name=TeX("$\\rho_{min}$")) +
-    scale_fill_brewer(palette="Set2", name=TeX("$\\sigma$")) +
+    #scale_fill_brewer(palette="Set2", name=TeX("$\\sigma$")) +
+    scale_fill_manual(values=darkCBPallet, name=TeX("$\\sigma$")) +
     ggtitle(paste(titlePrefix,"Euclidean (5D) Convergence ")) +
     theme_bw() +
     theme(text=element_text(family="Times", size=12),
@@ -255,8 +260,13 @@ plotRV500CoverPacking <- function(df, titlePrefix="Bounded", inSigma=0.1, inRhoM
     ylim(c(minY, maxY)) +
     annotate("text", label=TeX(rhoMinLabel), size=3,
              x=500, y=inRhoMin+0.05, hjust=1, vjust=0) +
-    scale_color_brewer(name="Archive\nMeasure",
-                       palette="Set2",
+    #scale_color_brewer(name="Archive\nMeasure",
+    #                   palette="Set1",
+    #                   labels=c("Cover\nEpsilon\n",
+    #                            "Packing\nEpsilon\n", 
+    #                            "Minimum\nSparseness")) +
+    scale_color_manual(name="Archive\nMeasure",
+                       values=darkCBPallet,
                        labels=c("Cover\nEpsilon\n",
                                 "Packing\nEpsilon\n", 
                                 "Minimum\nSparseness")) +
@@ -312,11 +322,16 @@ plotHamming500CoverPacking <- function(df, inN=10) {
     ylim(c(minY, maxY)) +
     annotate("text", label=TeX(rhoMinLabel), size=3,
              x=45, y=rhoMin+0.05, hjust=0, vjust=0) +
-    scale_color_brewer(name="Archive\nMeasure",
-                       palette="Set2",
+    #scale_color_brewer(name="Archive\nMeasure",
+    #                   palette="Set2",
+    #                   labels=c("Cover\nEpsilon\n",
+    #                            "Packing\nEpsilon\n", 
+    #                            "Minimum\nSparseness")) +
+    scale_color_manual(name="Archive\nMeasure",
+                       values=darkCBPallet,
                        labels=c("Cover\nEpsilon\n",
                                 "Packing\nEpsilon\n", 
-                                "Minimum\nSparseness")) +
+                                "Minimum\nSparseness")) +    
     xlab("Generation") +
     ylab("") +
     ggtitle(titleLabel) +

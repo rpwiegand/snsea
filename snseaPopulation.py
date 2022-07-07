@@ -249,7 +249,8 @@ if __name__ == '__main__':
                     "measureChildren":False,\
                     "fitnessByArchive":False,\
                     "convergenceTest":False,\
-                    "archiveSelectProb":0.0}                      
+                    "archiveSelectProb":0.0,\
+                    "archiveFilename":"NOARCHIVEWRITE"}                      
   configObj = configReader.buildArgObject(configFileName, 'snsea',configDefaults,False)
   
   # Flush std I/O so that it prints early during long runs

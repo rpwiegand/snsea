@@ -8,7 +8,7 @@
 #SBATCH --job-name=rv500pop
 
 EXPNAME=`grep "^${SLURM_ARRAY_TASK_ID}:" exp-manifest.txt | cut -d":" -f2`
-STUDY=ECJ-PopPop
+STUDY=ECJ-RandSample
 
 date
 env | grep "SLURM_ARRAY"

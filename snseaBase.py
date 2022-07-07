@@ -1,8 +1,14 @@
+import gc
 import sys
 import numpy as np
 import configReader
 import scipy.stats as stats
 import os, shutil
+import psuedoRobot
+
+gController = psuedoRobot.PsuedoRobotController(np.pi/3, 1.0)
+#gController = psuedoRobot.BaseController()
+
 
 def initializeIndividual(n, allzero=False, sigma=0.0, bounds=(0,1)):
   """
@@ -135,11 +141,14 @@ def isBinary(x):
   return (binary)
 
 
-def getDistance(x1, x2):
+def getDistance(inX1, inX2):
   """
   Return the distance betweeen two points.  Use L2 norm (Euclidean) distance
   for real values and Hamming for binary spaces.
   """
+  x1 = gController.getBehaviorVector(inX1)
+  x2 = gController.getBehaviorVector(inX2)
+
   distance = sum( (x1-x2)**2 )
 
   # If this is a real-value, use L2, otherwise using Hamming distance
@@ -364,23 +373,24 @@ def clearVisualizationDir(vizDirName):
     print("Could not make directory:", vizDirName)
 
     
-def writeVisualizationFile(vizDirName, gen, archive):
+def writeVisualizationFile(vizDirName, gen, archive, archiveFileName):
   """
   Write a file for reading and visualizing in Paraview
   """
-  filename = "archive" + str(gen) + ".csv"
+  filename = archiveFileName + str(gen) + ".csv"
   dirname = vizDirName.strip()
   fullPathFilename = os.path.join(dirname, filename)
   f = open(fullPathFilename, "w")
-  f.write("x, y, z, idx\n")
+  #f.write("x, y, idx\n")
   for idx in range(len(archive)):
     lineStr = ""
-    for arg in archive[idx]:
+    behaviorVect = gController.getBehaviorVector(archive[idx])
+    for arg in behaviorVect:
       lineStr += str(arg) + ", "
     lineStr += str(idx) + '\n'
     f.write(lineStr)
   f.close()
-  
+
 
 def isAlreadyInArchive(archive, x):
   """
@@ -414,7 +424,8 @@ def writeArchive(archive, archiveFilename):
   Write the archive out to the specified file.
   """
   archiveStrings = []
-  for x in archive:
+  for xControl in archive:
+    x = gController.getBehaviorVector(xControl)
     outStr = ''
     for idx in range(len(x)-1):
       outStr += str(x[idx]) + ','

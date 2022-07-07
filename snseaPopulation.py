@@ -94,7 +94,7 @@ def selectNewParents(population, k, mu, compareSet=None):
       
 def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=100, allzero=True, \
           reportFreq=100, boundMutation=True, plusStrategy=False, vizDirName="NONE", msrChildren=False,
-          fitnessByArchive=False, convergenceTest=False, archiveSelectProb=0.0):
+          fitnessByArchive=False, convergenceTest=False, archiveSelectProb=0.0, archiveFilename="NOARCHIVEWRITE"):
   """
   This is the main routine for the program.  It takes the mutation probability information,
   the size of the string, the sparseness criteral and runs until maxGenerations is hit.
@@ -127,7 +127,7 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     # Update the archive with any children who meet the criteria
     updateArchive(children, archive, k, rhoMin)
 
-    # Report results ever 100 generations
+    # Report results every reportFreq generations
     coverEst = None
     if ( (gen % reportFreq) == 0) and (boundMutation):
       coverEst = sb.archiveReport(archive, n, gen, trial, 10000, sigma, k, None)
@@ -171,6 +171,10 @@ def snsea(n, mu, llambda, rhoMin, k, trial, pm=0.0, sigma=0.0, maxGenerations=10
     print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\tCONVERGED')
   elif convergenceTest:
     print("YY: ", trial, '\t', minCover, '\t', lastMinCoverGen, '\t', maxGenerations, '\tNOT CONVERGED')
+
+  # Maybe write out the archive?
+  if (not vizDirName == "NONE") and (not vizDirName == "NOVIZ") and (not archiveFilename == "NOARCHIVEWRITE"):
+    sb.writeVisualizationFile(vizDirName, trial, archive, archiveFilename)
 
   # Return the archive, which is the solution in this case
   return (archive)
@@ -272,5 +276,6 @@ if __name__ == '__main__':
                     msrChildren=configObj.measureChildren,\
                     fitnessByArchive=configObj.fitnessByArchive,\
                     convergenceTest=configObj.convergenceTest,
-                    archiveSelectProb=configObj.archiveSelectProb)
+                    archiveSelectProb=configObj.archiveSelectProb,
+                    archiveFilename=configObj.archiveFilename)
    

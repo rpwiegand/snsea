@@ -200,6 +200,7 @@ plotSmallMult500rv <- function(df, titlePrefix="Bounded", ylim=c(0.5,1.25)) {
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.border = element_blank(),
+          strip.text.y = element_text(size=7),          
           panel.background = element_blank()) 
   
   print(p)
@@ -326,14 +327,14 @@ plotDotWhiskerConvergenceRates <- function(df) {
 }
 
 
-visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr="Selecting from Population (by Gen)") {
+visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=6, titleStr="Selecting from Population (by Gen)") {
   filename=paste('viz-archive-and-pop-s01-r0001-mu16lam32',suffix,'.csv',sep='')
   vizRaw <- read.csv(filename, header=T)
   vizFiltered <- mutate(filter(vizRaw, trial==tr, generation %in% gens),
                         isarchive=(whichPop!="archive"))
   
   p<- ggplot(vizFiltered, aes(x=x, y=y, color=whichPop, size=isarchive)) + 
-    geom_point(size=2) +
+    geom_point(size=1.2, alpha=0.75) +
     scale_color_manual(values=c("darkgray","firebrick", "darkgray"),
                        name="") +
     facet_wrap(. ~ generation, scales="fixed", ncol=ncol) +
@@ -349,6 +350,7 @@ visualizePopulations <- function(gens, tr=0, suffix='-popsel', ncol=5, titleStr=
           axis.ticks=element_blank(),
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
+          strip.text.x = element_text(size=10),
           legend.position="none") +
     guides(size=FALSE)
   
@@ -366,33 +368,33 @@ produceAllPlots <- function(whichPlots=1:6) {
   
   if (1 %in% whichPlots) {
     p1 <- plotSmallMult500rv(df500)
-    ggsave("bounded-500-sm-mu2lam8.pdf", width=13, height=10, units="cm")
+    ggsave("bounded-500-sm-mu2lam8.pdf", width=13, height=7, units="cm")
   }
   
   if (2 %in% whichPlots) {
     p2 <- plotRV500CoverPacking(df500)
-    ggsave("bounded-500-s01r02-mu2lam8.pdf", width=13, height=10, units="cm")
+    ggsave("bounded-500-s01r02-mu2lam8.pdf", width=13, height=7, units="cm")
   }
   
   if (3 %in% whichPlots) {
     p3 <- plotDotWhiskerConvergenceRates(dfconv)
-    ggsave("bounded-conv-s02-r02.pdf", width=13, height=10, units="cm")
+    ggsave("bounded-conv-s02-r02.pdf", width=13, height=7, units="cm")
   }
   
   if (4 %in% whichPlots) {
-    p4 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-popsel', 4)
-    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-popsel.pdf", width=13, height=10, units="cm")
+    p4 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-popsel', 12)
+    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-popsel.pdf", width=13, height=4, units="cm")
   }
 
   if (5 %in% whichPlots) {
-    p5 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-archsel', 4, "Selecting from Archive (by Gen)")
-    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-archsell.pdf", width=13, height=10, units="cm")
+    p5 <- visualizePopulations(seq(from=0, to=110, by=10), 0, '-archsel', 12, "Selecting from Archive (by Gen)")
+    ggsave("viz-archive-and-pop-s01-r0001-mu16lam32-archsell.pdf", width=13, height=4, units="cm")
   }
 
   if (6 %in% whichPlots) {
     df <- read.table('boundedrv-500-vizexamp-mu2lam8-full.XX', header=T)
     p6 <- plotRV500CoverPacking(df, doFilter=F)
-    ggsave("boundedrv-500-vizexamp-mu2lam8-full.pdf", width=13, height=10, units="cm")
+    ggsave("boundedrv-500-vizexamp-mu2lam8-full.pdf", width=13, height=7, units="cm")
   }
   
 }

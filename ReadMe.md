@@ -52,5 +52,3 @@ This code relies on some basic Python modules, which must be installed.  These i
 * SafeConfigParser
 * SciPy
 
-
-A new line!

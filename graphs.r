@@ -5,11 +5,13 @@ library(RColorBrewer)
 library(latex2exp)
 library(latex2exp)
 
+# File the point at which cover and packing cross one another
 findKeyPoint <- function(results) {
   idx <- which(results$CoverEpsilon < results$PackingEpsilon)[1]
   return( c(results$Generation[idx],results$CoverEpsilon[idx]) )
 }
 
+# Produce a plot of real-valued runs where the space was bounded
 plotBoundedCoverPacking <- function(rhoMin=0.6, sigma=0.3, savePDF=False) {
   filename=paste("Results/bounded-sig-", sigma, "-k-3-rho-", rhoMin, ".out", sep='') 
 
@@ -74,6 +76,7 @@ plotBoundedCoverPacking <- function(rhoMin=0.6, sigma=0.3, savePDF=False) {
 }
 
 
+# Try to estimate how quickly the curve is converging
 estimateConvergenceRate <- function(sigma=0.1, rhoMin=0.45, suffix="-nopop") {
   filename = paste("Results/unbounded-rv-s", sigma, "-r", rhoMin, suffix,".out", sep='') 
   
@@ -86,6 +89,8 @@ estimateConvergenceRate <- function(sigma=0.1, rhoMin=0.45, suffix="-nopop") {
   return(sum(aggregatedResults$ScaledCPDiff))
 }
 
+
+# Estimate where Cover and Packing intersect for a specific set of parameters
 estimateCoverPackingIntersection <- function(sigma=0.1, rhoMin=0.45, suffix="-nopop", maxHypotheticalGeneration=100000, minGen=10) {
   filename = paste("Results/unbounded-rv-s", sigma, "-r", rhoMin, suffix,".out", sep='') 
   print(paste("Reading file: ", filename), quote=F)
@@ -116,6 +121,7 @@ estimateCoverPackingIntersection <- function(sigma=0.1, rhoMin=0.45, suffix="-no
 }
 
 
+# Produce a plot of real-valued runs where the space was UNbounded
 plotUnboundedCoverPacking <- function(rhoMin=0.45, sigma=0.1, suffix="-mu2-lambda8", savePDF=False) {
   filename = paste("Results/unbounded-rv-s", sigma, "-r", rhoMin, suffix,".out", sep='') 
   #filename = paste("Results/unbounded-sig-", sigma, "-k-3-rho-", rhoMin, suffix,".out", sep='') 
@@ -178,7 +184,7 @@ plotUnboundedCoverPacking <- function(rhoMin=0.45, sigma=0.1, suffix="-mu2-lambd
 }
 
 
-
+# Produce a plot of Hamming space runs
 plotHammingCoverPacking <- function(rhoMin=3, n=16, savePDF=False) {
   filename=paste("Results/hamming-r", rhoMin, "-n", n, ".out", sep='') 
 
@@ -264,6 +270,7 @@ barplotUnboundedConvergencePointByEval <- function(filename='Results/UnboundedCo
 }
 
 
+# Draw the populations/archives
 visualizePopulations <- function(gens, tr=0, filename='Results/viz-archive-and-pop.csv'){
   vizRaw <- read.csv(filename, header=T)
   vizFiltered <- mutate(filter(vizRaw, trial==tr, generation %in% gens),
@@ -292,7 +299,7 @@ visualizePopulations <- function(gens, tr=0, filename='Results/viz-archive-and-p
 }
 
 
-
+# Produce a bar plot for the real valued, unbounded cases showing where the convergence points are
 barplotUnboundedConvergencePoint <- function(filename='Results/UnboundedConvergencePoint.csv', savePDF=F) {
   ucp <- read.csv(filename, header=T, sep='|')
   ucp <- mutate(ucp,
@@ -321,6 +328,7 @@ barplotUnboundedConvergencePoint <- function(filename='Results/UnboundedConverge
 }
 
 
+# Produce a plot of how the children cover the space
 plotChildCoverRatio <- function(filename='Results/unbounded-rv-s0.1-r0.45-pop2c16.out') {
   coverData <- read.table(filename, header=T)
   coverData <- mutate(coverData, ChildCoverRatio = ChildCover/CoverEpsilon )

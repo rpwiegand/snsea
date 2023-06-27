@@ -218,6 +218,7 @@ plotSmallMult500rvNOPOP <- function(df, titlePrefix="Bounded") {
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.border = element_blank(),
+          strip.text.y = element_text(size=7),
           panel.background = element_blank()) 
   
   print(p)
@@ -351,12 +352,12 @@ plotHamming500CoverPacking <- function(df, inN=10) {
 produceAllPlots <- function(whichPlots=1:9) {
   if (1 %in% whichPlots) {
     p1 <- plotRVConvBarPlotNOPOP(getRVResults(basename="boundedrv-conv"), "Bounded")
-    ggsave("bounded-conv-NOPOP.pdf", width=13, height=10, units="cm")
+    ggsave("bounded-conv-NOPOP.pdf", width=13, height=7, units="cm")
   }
   
   if (2 %in% whichPlots) {
     p2 <- plotRVConvBarPlotNOPOP(getRVResults(basename="unboundedrv-conv"), "Unbounded")
-    ggsave("unbounded-conv-NOPOP.pdf", width=13, height=10, units="cm")
+    ggsave("unbounded-conv-NOPOP.pdf", width=13, height=7, units="cm")
   }
   
   if (3 %in% whichPlots) {
@@ -379,12 +380,12 @@ produceAllPlots <- function(whichPlots=1:9) {
   
   if (6 %in% whichPlots) {
     p6 <- plotSmallMult500rvNOPOP(getRVResults(basename="boundedrv-500", suffix=".XX"), "Bounded")
-    ggsave("bounded-500sm-NOPOP.pdf", width=13, height=13, units="cm")
+    ggsave("bounded-500sm-NOPOP.pdf", width=13, height=7, units="cm")
   }
   
   if (7 %in% whichPlots) {
     p7 <- plotSmallMult500rvNOPOP(getRVResults(basename="unboundedrv-500", suffix=".XX"), "Unbounded")
-    ggsave("unbounded-500sm-NOPOP.pdf", width=13, height=13, units="cm")
+    ggsave("unbounded-500sm-NOPOP.pdf", width=13, height=7, units="cm")
   }
   
   if (8 %in% whichPlots) {
